@@ -1,9 +1,15 @@
 package com.yuudati.bookmanager.entity;
 
+import com.google.common.collect.Lists;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.Button;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,97 +54,245 @@ public class Book {
     };
 
     /**
+     * 源文件
+     */
+    private File oldFile;
+
+    /**
      * 原路径
      */
-    private String fromPath;
+    private StringProperty fromPath;
     /**
      * 原名
      */
-    private String oldName;
+    private StringProperty oldName;
     /**
      * 新路径
      */
-    private String toPath;
+    private StringProperty toPath;
     /**
      * 新名
      */
-    private String newName;
+    private StringProperty newName;
 
     /**
      * 来源展会
      */
-    private String exhibition;
+    private StringProperty exhibition;
     /**
      * 作者
      */
-    private String author;
+    private StringProperty author;
     /**
      * 本名
      */
-    private String bookName;
+    private StringProperty bookName;
     /**
      * 汉化组
      */
-    private String translate;
+    private StringProperty translate;
     /**
      * 题材
      */
-    private String theme;
+    private StringProperty theme;
+
     private String[] newInfo = new String[5];
 
 
     /**
      * 预览按钮
      */
-    private Button previewButton;
+    private ObjectProperty<Button> previewButton;
 
-    public Book(String fromPath, String oldName) {
-        this.fromPath = fromPath;
-        this.oldName = oldName;
-        setBaseInfo(oldName);
+    public Book(File oldFile, String fromPath, String oldName) {
+        this.oldFile = oldFile;
+        this.fromPath = new SimpleStringProperty(fromPath);
+        this.oldName = new SimpleStringProperty(oldName);
+        this.toPath = new SimpleStringProperty("");
+        this.newName = new SimpleStringProperty("");
+        this.setBaseInfo(oldName);
+        String exhibition = newInfo[0];
+        this.exhibition = new SimpleStringProperty(exhibition.substring(
+                exhibition.startsWith("(") ? 1 : 0,
+                exhibition.endsWith(")") ? exhibition.length() - 1 : exhibition.length())
+        );
+        String author = newInfo[1];
+        this.author = new SimpleStringProperty(author.substring(
+                author.startsWith("[") ? 1 : 0,
+                author.endsWith("]") ? author.length() - 1 : author.length())
+        );
+        String bookName = newInfo[2];
+        this.bookName = new SimpleStringProperty(bookName.substring(
+                bookName.startsWith("]") ? 1 : 0,
+                bookName.endsWith("[") ? bookName.length() - 1 : bookName.length())
+        );
+        String theme = newInfo[3];
+        this.theme = new SimpleStringProperty(theme.substring(
+                theme.startsWith("(") ? 1 : 0,
+                theme.endsWith(")") ? theme.length() - 1 : theme.length())
+        );
+        String translate = newInfo[4];
+        this.translate = new SimpleStringProperty(translate.substring(
+                translate.startsWith("[") ? 1 : 0,
+                translate.endsWith("]") ? translate.length() - 1 : translate.length()
+        ));
     }
 
-    public void setBaseInfo(String oldName){
+    public void updateNewName(){
+        this.newName.set(String.format("(%s)_[%s]_%s_(%s)_[%s]",
+                this.getExhibition(), this.getAuthor(), this.getBookName(), this.getTheme(), this.getTranslate()));
+    }
+
+
+    public void setBaseInfo(String oldName) {
         Matcher matcher;
         for (int i = 0; i < patterns.length; i++) {
             matcher = patterns[i].matcher(oldName);
-            if (matcher.find()){
-                newInfo[i] = matcher.group(matcher.groupCount());
-            }else {
-                newInfo[i] = "";
+            if (i == 3) {
+                List<String> matcherList = Lists.newArrayList();
+                while (matcher.find()) {
+                    matcherList.add(matcher.group());
+                }
+                newInfo[i] = matcherList.get(matcherList.size() - 1);
+            } else {
+                if (matcher.find()) {
+                    newInfo[i] = matcher.group();
+                } else {
+                    newInfo[i] = "";
+                }
             }
         }
     }
 
-    public static void main(String[] args) {
-        String name = "(C87) [AYUSET (あゆや)] 愛と欲望のMMTWTFF ( 艦隊これくしょん-艦これ-) [屏幕髒了漢化組].rar";
-        final Matcher matcher1 = exhibitionPattern.matcher(name);
-        if (matcher1.find()){
-            System.out.println(matcher1.groupCount() == 0 ? matcher1.group(0) : matcher1.group(matcher1.groupCount() - 1));
-        }
-        final Matcher matcher2 = authorPattern.matcher(name);
-        if (matcher2.find()){
-            System.out.println(matcher2.groupCount() == 0 ? matcher2.group(0) : matcher2.group(matcher2.groupCount() - 1));
-        }
-        final Matcher matcher3 = bookNamePattern.matcher(name);
-        if (matcher3.find()){
-            System.out.println(matcher3.groupCount() == 0 ? matcher3.group(0) : matcher3.group(matcher3.groupCount() - 1));
-        }
-        final Matcher matcher4 = themePattern.matcher(name);
-        while (matcher4.find()){
-
-            final String group = matcher4.group();
-            final String group3 = matcher4.group(0);
-            final String group1 = matcher4.group(matcher4.groupCount());
-            final String group2 = matcher4.group(matcher4.groupCount() - 1);
-            final int i = matcher4.groupCount();
-            System.out.println(matcher4.groupCount() == 0 ? matcher4.group(0) : matcher4.group(matcher4.groupCount() - 1));
-        }
-        final Matcher matcher5 = translatePattern.matcher(name);
-        if (matcher5.find()){
-            System.out.println(matcher5.groupCount() == 0 ? matcher5.group(0) : matcher5.group(matcher5.groupCount() - 1));
-        }
+    public File getOldFile() {
+        return oldFile;
     }
 
+    public void setOldFile(File oldFile) {
+        this.oldFile = oldFile;
+    }
 
+    public String getFromPath() {
+        return fromPath.get();
+    }
+
+    public StringProperty fromPathProperty() {
+        return fromPath;
+    }
+
+    public void setFromPath(String fromPath) {
+        this.fromPath.set(fromPath);
+    }
+
+    public String getOldName() {
+        return oldName.get();
+    }
+
+    public StringProperty oldNameProperty() {
+        return oldName;
+    }
+
+    public void setOldName(String oldName) {
+        this.oldName.set(oldName);
+    }
+
+    public String getToPath() {
+        return toPath.get();
+    }
+
+    public StringProperty toPathProperty() {
+        return toPath;
+    }
+
+    public void setToPath(String toPath) {
+        this.toPath.set(toPath);
+    }
+
+    public String getNewName() {
+        return newName.get();
+    }
+
+    public StringProperty newNameProperty() {
+        return newName;
+    }
+
+    public void setNewName(String newName) {
+        this.newName.set(newName);
+    }
+
+    public String getExhibition() {
+        return exhibition.get();
+    }
+
+    public StringProperty exhibitionProperty() {
+        return exhibition;
+    }
+
+    public void setExhibition(String exhibition) {
+        this.exhibition.set(exhibition);
+    }
+
+    public String getAuthor() {
+        return author.get();
+    }
+
+    public StringProperty authorProperty() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author.set(author);
+    }
+
+    public String getBookName() {
+        return bookName.get();
+    }
+
+    public StringProperty bookNameProperty() {
+        return bookName;
+    }
+
+    public void setBookName(String bookName) {
+        this.bookName.set(bookName);
+    }
+
+    public String getTranslate() {
+        return translate.get();
+    }
+
+    public StringProperty translateProperty() {
+        return translate;
+    }
+
+    public void setTranslate(String translate) {
+        this.translate.set(translate);
+    }
+
+    public String getTheme() {
+        return theme.get();
+    }
+
+    public StringProperty themeProperty() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme.set(theme);
+    }
+
+    public ObjectProperty<Button> getPreviewButton() {
+        return previewButton;
+    }
+
+    public void setPreviewButton(ObjectProperty<Button> previewButton) {
+        this.previewButton = previewButton;
+    }
+
+    public String[] getNewInfo() {
+        return newInfo;
+    }
+
+    public void setNewInfo(String[] newInfo) {
+        this.newInfo = newInfo;
+    }
 }
