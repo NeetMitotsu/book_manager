@@ -10,7 +10,7 @@
 
     <properties>
         <projext.build.sourceEncoding>UTF-8</projext.build.sourceEncoding>
-        <mainClass>com.yuudati.bookmanager.sample.Main</mainClass>
+        <mainClass>com.yuudati.bookmanager.Main</mainClass>
         <javafx.version>11</javafx.version>
     </properties>
     <dependencies>
@@ -24,6 +24,22 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>20.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -36,6 +52,11 @@
                     <source>11</source>
                     <target>11</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+                <version>1.18.4.0</version>
             </plugin>
         </plugins>
     </build>
