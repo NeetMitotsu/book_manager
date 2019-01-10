@@ -25,8 +25,7 @@
                 prefHeight="40.0" prefWidth="115.0" text="只重命名"/>
         <Button fx:id="moveAndRenameButton" layoutX="1110.0" layoutY="89.0" mnemonicParsing="false"
                 onAction="#moveAndRename" prefHeight="40.0" prefWidth="115.0" text="移动并重命名"/>
-        <ScrollPane fitToHeight="true" layoutY="160.0" prefHeight="600.0" prefWidth="1366.0">
-            <TableView fx:id="mainTableView" prefHeight="600.0" prefWidth="1366.0" tableMenuButtonVisible="true">
+            <TableView fx:id="mainTableView" layoutY="160.0" prefHeight="600.0" prefWidth="1366.0" tableMenuButtonVisible="true">
                 <columns>
                     <TableColumn fx:id="rowNumCol" minWidth="36.0" prefWidth="36.0" resizable="false" text="行号"/>
                     <TableColumn fx:id="fromPathCol" minWidth="133.0" prefWidth="133.0" text="原文件路径"/>
@@ -42,6 +41,6 @@
                     </TableColumn>
                 </columns>
             </TableView>
-        </ScrollPane>
+        <!--</ScrollPane>-->
     </children>
 </AnchorPane>

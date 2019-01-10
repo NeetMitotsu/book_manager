@@ -42,8 +42,6 @@ public class MainTableController implements Initializable {
 
     @FXML
     private Pane pane;
-    @FXML
-    private ScrollPane scrollPane;
 
     @FXML
     private Button fromPathButton;
@@ -73,8 +71,7 @@ public class MainTableController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         mainTableView.prefWidthProperty().bind(pane.widthProperty());
         mainTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        scrollPane.prefWidthProperty().bind(pane.widthProperty());
-        pane.prefWidthProperty().bind(mainTableView.widthProperty());
+        mainTableView.prefWidthProperty().bind(pane.widthProperty());
         initTableView();
     }
 
