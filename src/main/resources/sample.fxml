@@ -7,7 +7,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="768.0" prefHeight="768.0" prefWidth="1366.0"
+<AnchorPane fx:id="pane" maxHeight="768.0" prefHeight="768.0" prefWidth="1366.0"
             xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.yuudati.bookmanager.controller.MainTableController">
     <children>
@@ -21,7 +21,7 @@
         <TextField fx:id="toPathTextField" editable="false" layoutX="210.0" layoutY="89.0" prefHeight="40.0"
                    prefWidth="600.0"
                    text="目标路径"/>
-        <ScrollPane fitToHeight="true" layoutY="160.0" prefHeight="600.0" prefWidth="1366.0">
+        <ScrollPane fx:id="scrollPane" fitToHeight="true" layoutY="160.0" prefHeight="600.0" prefWidth="1366.0">
             <TableView fx:id="mainTableView" prefHeight="600.0" prefWidth="1366.0" tableMenuButtonVisible="true">
                 <columns>
                     <TableColumn fx:id="rowNumCol" minWidth="36.0" prefWidth="36.0"

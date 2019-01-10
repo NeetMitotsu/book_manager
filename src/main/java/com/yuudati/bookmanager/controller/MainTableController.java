@@ -13,6 +13,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import lombok.Data;
@@ -39,6 +40,11 @@ public class MainTableController implements Initializable {
     private Stage primaryStage;
 
     @FXML
+    private Pane pane;
+    @FXML
+    private ScrollPane scrollPane;
+
+    @FXML
     private Button fromPathButton;
     @FXML
     private Button toPathButton;
@@ -58,6 +64,9 @@ public class MainTableController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        mainTableView.prefWidthProperty().bind(pane.widthProperty());
+        scrollPane.prefWidthProperty().bind(pane.widthProperty());
+        pane.prefWidthProperty().bind(mainTableView.widthProperty());
         initTableView();
     }
 
