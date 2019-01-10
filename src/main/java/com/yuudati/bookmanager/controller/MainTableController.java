@@ -5,6 +5,7 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
 import com.yuudati.bookmanager.entity.Book;
 import com.yuudati.bookmanager.entity.ButtonCell;
+import com.yuudati.bookmanager.entity.FileActionTask;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -22,9 +23,9 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +48,12 @@ public class MainTableController implements Initializable {
     @FXML
     private TextField toPathTextField;
     @FXML
+    public Button moveButton;
+    @FXML
+    public Button renameButton;
+    @FXML
+    public Button moveAndRenameButton;
+    @FXML
     private TableView<Book> mainTableView;
 
     @FXML
@@ -58,6 +65,7 @@ public class MainTableController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        mainTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         initTableView();
     }
 
@@ -67,23 +75,21 @@ public class MainTableController implements Initializable {
     private void initTableView() {
         mainTableView.setEditable(true);
         // 行号
-        rowNumCol.setCellFactory(column -> {
-            TableCell<Book, String> cell = new TableCell<>() {
-                @Override
-                protected void updateItem(String item, boolean empty) {
-                    super.updateItem(item, empty);
-                    this.setText(null);
-                    this.setGraphic(null);
-                    if (!empty) {
-                        int rowIndex = this.getIndex() + 1;
-                        this.setText(String.valueOf(rowIndex));
-                    }
+        rowNumCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                this.setText(null);
+                this.setGraphic(null);
+                if (!empty) {
+                    int rowIndex = this.getIndex() + 1;
+                    this.setText(String.valueOf(rowIndex));
                 }
-            };
-            return cell;
+            }
         });
         fromPathCol.setCellValueFactory(cellData -> cellData.getValue().fromPathProperty());
         fromNameCol.setCellValueFactory(cellData -> cellData.getValue().oldNameProperty());
+        fromNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         toPathCol.setCellValueFactory(cellData -> cellData.getValue().toPathProperty());
         toNameCol.setCellValueFactory(cellData -> cellData.getValue().newNameProperty());
         toNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -92,45 +98,55 @@ public class MainTableController implements Initializable {
             book.setNewName(event.getNewValue());
         });
         toNameCol.setOnEditCancel(toNameCol.getOnEditCommit());
-        toNameCol.setOnEditStart(toNameCol.getOnEditCommit());
         exhibitionCol.setCellValueFactory(cellData -> cellData.getValue().exhibitionProperty());
         exhibitionCol.setCellFactory(TextFieldTableCell.forTableColumn());
         exhibitionCol.setOnEditCommit(event -> {
-            Book book = mainTableView.getSelectionModel().getSelectedItem();
-            book.setExhibition(event.getNewValue());
-            book.updateNewName();
+            List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
+            books.forEach(book -> {
+                book.setExhibition(event.getNewValue());
+                book.updateNewName();
+            });
+
         });
         exhibitionCol.setOnEditCancel(exhibitionCol.getOnEditCommit());
         authorCol.setCellValueFactory(cellData -> cellData.getValue().authorProperty());
         authorCol.setCellFactory(TextFieldTableCell.forTableColumn());
         authorCol.setOnEditCommit(event -> {
-            Book book = mainTableView.getSelectionModel().getSelectedItem();
-            book.setAuthor(event.getNewValue());
-            book.updateNewName();
+            List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
+            books.forEach(book -> {
+                book.setAuthor(event.getNewValue());
+                book.updateNewName();
+            });
         });
         authorCol.setOnEditCancel(authorCol.getOnEditCommit());
         bookNameCol.setCellValueFactory(cellData -> cellData.getValue().bookNameProperty());
         bookNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         bookNameCol.setOnEditCommit(event -> {
-            Book book = mainTableView.getSelectionModel().getSelectedItem();
-            book.setBookName(event.getNewValue());
-            book.updateNewName();
+            List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
+            books.forEach(book -> {
+                book.setBookName(event.getNewValue());
+                book.updateNewName();
+            });
         });
         bookNameCol.setOnEditCancel(bookNameCol.getOnEditCommit());
         themeCol.setCellValueFactory(cellData -> cellData.getValue().themeProperty());
         themeCol.setCellFactory(TextFieldTableCell.forTableColumn());
         themeCol.setOnEditCommit(event -> {
-            Book book = mainTableView.getSelectionModel().getSelectedItem();
-            book.setTheme(event.getNewValue());
-            book.updateNewName();
+            List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
+            books.forEach(book -> {
+                book.setTheme(event.getNewValue());
+                book.updateNewName();
+            });
         });
         themeCol.setOnEditCancel(themeCol.getOnEditCommit());
         translateCol.setCellValueFactory(cellData -> cellData.getValue().translateProperty());
         translateCol.setCellFactory(TextFieldTableCell.forTableColumn());
         translateCol.setOnEditCommit(event -> {
-            Book book = mainTableView.getSelectionModel().getSelectedItem();
-            book.setTranslate(event.getNewValue());
-            book.updateNewName();
+            List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
+            books.forEach(book -> {
+                book.setTranslate(event.getNewValue());
+                book.updateNewName();
+            });
         });
         translateCol.setOnEditCancel(translateCol.getOnEditCommit());
         actionCol.setCellFactory(param -> {
@@ -154,35 +170,21 @@ public class MainTableController implements Initializable {
     public void switchFromPath(ActionEvent event) {
         File dir = directoryChoose("选择原路径", fromPathTextField);
         assert dir != null;
-        String patternStr = "\\(\\S+\\)(\\s*)(\\[.+])+(.)+(\\(.+\\))* *(\\[.+])* *(\\[.+])*";
-        Pattern pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
         File[] files = dir.listFiles();
         final HashMultiset<File> multiset = HashMultiset.create();
+        assert files != null;
         for (File f : files) {
             List<File> fileList = Lists.newArrayList();
             if (f.isDirectory()) {
                 getFileList(f, fileList);
-                for (File file :
-                        fileList) {
-                    final String fileName = file.getName();
-                    Matcher m = pattern.matcher(fileName);
-                    if (m.find()) {
-                        multiset.add(file);
-                    }
-                }
+                multiset.addAll(fileList);
             }
             if (f.isFile()) {
-                final String fileName = f.getName();
-                Matcher m = pattern.matcher(fileName);
-                if (m.find()) {
-                    multiset.add(f);
-                } else {
-
-                }
+                multiset.add(f);
             }
         }
 
-        final List<Book> fileList = multiset.elementSet().stream().map(file -> new Book(file, file.getPath(), file.getName())).collect(Collectors.toList());
+        final List<Book> fileList = multiset.elementSet().stream().map(file -> new Book(file, file.getParent(), file.getName())).collect(Collectors.toList());
         for (Book book :
                 fileList) {
             System.out.println(Lists.newArrayList(book.getNewInfo()));
@@ -213,9 +215,8 @@ public class MainTableController implements Initializable {
     /**
      * 选择目标路径
      *
-     * @param event
      */
-    public void switchToPath(ActionEvent event) {
+    public void switchToPath() {
         File toPath = directoryChoose("选择目标路径", toPathTextField);
         if (!toPath.exists() && showAlert("该路径不存在, 是否创建")) {
             toPath.mkdirs();
@@ -240,8 +241,8 @@ public class MainTableController implements Initializable {
             return file;
         } else {
             if (Strings.isNullOrEmpty(showField.getText()) ||
-            showField.getText().startsWith("源") ||
-            showField.getText().startsWith("目")){
+                    showField.getText().startsWith("源") ||
+                    showField.getText().startsWith("目")) {
                 showAlert("请选择一个目录");
                 return null;
             }
@@ -266,8 +267,56 @@ public class MainTableController implements Initializable {
         return flag.get();
     }
 
-    public void showBookTable(ObservableList<Book> bookList) {
+    /**
+     * 只移动
+     *
+     */
+    public void onlyMove() {
+        final ObservableList<Book> books = mainTableView.getItems();
+        // cpu核数为最大并发数
+        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinTask<Boolean> task = new FileActionTask(books, FileActionTask.MOVE);
+        Boolean result = forkJoinPool.invoke(task);
+        if (Boolean.TRUE.equals(result)) {
+            showAlert("移动完成");
+        } else {
+            showAlert("移动失败");
+        }
+    }
 
+    /**
+     * 只重命名
+     *
+     */
+    public void onlyRename() {
+        final ObservableList<Book> books = mainTableView.getItems();
+        // cpu核数为最大并发数
+        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinTask<Boolean> task = new FileActionTask(books, FileActionTask.RENAME);
+        Boolean result = forkJoinPool.invoke(task);
+        if (Boolean.TRUE.equals(result)) {
+            showAlert("重命名完成");
+        } else {
+            showAlert("重命名失败");
+        }
+    }
+
+    /**
+     * 移动并重命名
+     *
+     * @param actionEvent
+     */
+    public void moveAndRename(ActionEvent actionEvent) {
+        final ObservableList<Book> books = mainTableView.getItems();
+        // cpu核数为最大并发数
+        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinTask<Boolean> task = new FileActionTask(books, FileActionTask.MOVE_RENAME);
+        Boolean result = forkJoinPool.invoke(task);
+        if (Boolean.TRUE.equals(result)) {
+            showAlert("操作完成");
+        } else {
+            showAlert("操作失败");
+        }
     }
 
     public Scene getScene() {
