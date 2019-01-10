@@ -1,5 +1,6 @@
 package com.yuudati.bookmanager.entity;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -21,26 +22,29 @@ import java.util.regex.Pattern;
 @Slf4j
 public class Book {
 
+    private static final String patternStr = "\\(\\S+\\)(\\s*)(\\[.+])+(.)+(\\(.+\\))* *(\\[.+])* *(\\[.+])*";
+    private static final Pattern fileNamePattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
+
     /**
      * 来源匹配
      */
-    private static Pattern exhibitionPattern = Pattern.compile("\\((\\w*)+\\)");
+    private static final Pattern exhibitionPattern = Pattern.compile("\\((\\w*)+\\)");
     /**
      * 作者匹配
      */
-    private static Pattern authorPattern = Pattern.compile("\\[.+]\\s+");
+    private static final Pattern authorPattern = Pattern.compile("\\[.+]\\s+");
     /**
      * 本名匹配
      */
-    private static Pattern bookNamePattern = Pattern.compile("].+\\[");
+    private static final Pattern bookNamePattern = Pattern.compile("].+\\[");
     /**
      * 题材匹配
      */
-    private static Pattern themePattern = Pattern.compile("\\( *(\\S|\\w)* *(\\S|\\w) *\\)");
+    private static final Pattern themePattern = Pattern.compile("\\( *(\\S|\\w)* *(\\S|\\w) *\\)");
     /**
      * 汉化组匹配
      */
-    private static Pattern translatePattern = Pattern.compile("\\[\\S+]");
+    private static final Pattern translatePattern = Pattern.compile("\\[\\S+]");
 
     /**
      * 匹配组
@@ -145,23 +149,30 @@ public class Book {
 
 
     public void setBaseInfo(String oldName) {
-        Matcher matcher;
-        for (int i = 0; i < patterns.length; i++) {
-            matcher = patterns[i].matcher(oldName);
-            if (i == 3) {
-                List<String> matcherList = Lists.newArrayList();
-                while (matcher.find()) {
-                    matcherList.add(matcher.group());
-                }
-                newInfo[i] = matcherList.get(matcherList.size() - 1);
-            } else {
-                if (matcher.find()) {
-                    newInfo[i] = matcher.group();
+        if(fileNamePattern.matcher(oldName).find()){
+            Matcher matcher;
+            for (int i = 0; i < patterns.length; i++) {
+                matcher = patterns[i].matcher(oldName);
+                if (i == 3) {
+                    List<String> matcherList = Lists.newArrayList();
+                    while (matcher.find()) {
+                        matcherList.add(matcher.group());
+                    }
+                    newInfo[i] = matcherList.get(matcherList.size() - 1);
                 } else {
-                    newInfo[i] = "";
+                    if (matcher.find()) {
+                        newInfo[i] = matcher.group();
+                    } else {
+                        newInfo[i] = "";
+                    }
                 }
             }
+        }else {
+            for (int i = 0; i < newInfo.length; i++) {
+                newInfo[i] = Strings.nullToEmpty(newInfo[i]);
+            }
         }
+
     }
 
     public File getOldFile() {
@@ -170,6 +181,8 @@ public class Book {
 
     public void setOldFile(File oldFile) {
         this.oldFile = oldFile;
+        this.setOldName(oldFile.getName());
+        this.setFromPath(oldFile.getParent());
     }
 
     public String getFromPath() {
