@@ -2,6 +2,7 @@ package com.yuudati.bookmanager;
 
 import com.yuudati.bookmanager.controller.MainTableController;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -19,7 +20,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/sample.fxml"));
+        final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/mainTable.fxml"));
         Parent root = fxmlLoader.load();
         stage.setTitle("Book Manager V1.0");
         final Scene scene = new Scene(root, 1366, 768);
@@ -30,9 +31,11 @@ public class Main extends Application {
         mainTableController.setScene(scene);
         scene.getStylesheets().add(getClass().getResource("/application.css").toExternalForm());
         stage.setScene(scene);
+        stage.setOnCloseRequest(event -> {
+            Platform.exit();
+        });
         log.info("启动......");
         stage.show();
-
     }
 
     public static void main(String[] args) {

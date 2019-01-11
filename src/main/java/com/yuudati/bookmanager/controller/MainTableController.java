@@ -6,26 +6,38 @@ import com.google.common.collect.Lists;
 import com.yuudati.bookmanager.entity.Book;
 import com.yuudati.bookmanager.entity.ButtonCell;
 import com.yuudati.bookmanager.entity.FileActionTask;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.fxml.JavaFXBuilderFactory;
+import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -161,8 +173,11 @@ public class MainTableController implements Initializable {
             previewButton.setOnAction(event -> {
                 mainTableView.getSelectionModel().select(buttonCell.getIndex());
                 Book selectedItem = mainTableView.getSelectionModel().getSelectedItem();
-                showAlert(selectedItem.getOldName());
-                System.out.println("点击了预览按钮");
+                try {
+                    Desktop.getDesktop().open(selectedItem.getOldFile());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
             return buttonCell;
         });
@@ -262,7 +277,7 @@ public class MainTableController implements Initializable {
      *
      * @param text
      */
-    public Boolean showAlert(String text) {
+    private Boolean showAlert(String text) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.titleProperty().set("信息");
         alert.headerTextProperty().set(text);
@@ -272,6 +287,25 @@ public class MainTableController implements Initializable {
                 .ifPresent(response -> flag.set(true));
         return flag.get();
     }
+
+    @FXML
+    private void showProgress(){
+        // int count, int total
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(getClass().getResource("/progressBar.fxml"));
+            fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
+            Parent root = fxmlLoader.load();
+            Stage progressStage = new Stage(StageStyle.TRANSPARENT);
+            progressStage.setScene(new Scene(root));
+            ProgressController controller = fxmlLoader.getController();
+            controller.init(1, 100, progressStage);
+            progressStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * 只移动
