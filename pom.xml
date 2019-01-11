@@ -6,39 +6,41 @@
 
     <groupId>com.yuudati</groupId>
     <artifactId>book_manager</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
+
+    <name>book_manager</name>
 
     <properties>
         <projext.build.sourceEncoding>UTF-8</projext.build.sourceEncoding>
         <mainClass>com.yuudati.bookmanager.Main</mainClass>
-        <javafx.version>11</javafx.version>
+        <!--<javafx.version>11</javafx.version>-->
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.openjfx</groupId>-->
+            <!--<artifactId>javafx-controls</artifactId>-->
+            <!--<version>${javafx.version}</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.openjfx</groupId>-->
+            <!--<artifactId>javafx-fxml</artifactId>-->
+            <!--<version>${javafx.version}</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.4</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.21</version>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>20.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
         </dependency>
     </dependencies>
 
@@ -49,15 +51,37 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>8</source>
+                    <target>8</target>
+                    <encoding>UTF-8</encoding>
+                    <goal>
+                        <mainClass>com.yuudati.bookmanager.Main</mainClass>
+                    </goal>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-maven-plugin</artifactId>
-                <version>1.18.4.0</version>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.codehaus.mojo</groupId>-->
+                <!--<artifactId>exec-maven-plugin</artifactId>-->
+                <!--<version>1.2.1</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<goals>-->
+                            <!--<goal>java</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+                <!--<configuration>-->
+                    <!--<mainClass>${mainClass}</mainClass>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
+            <!--<plugin>-->
+                <!--<groupId>org.projectlombok</groupId>-->
+                <!--<artifactId>lombok-maven-plugin</artifactId>-->
+                <!--<version>1.18.4.0</version>-->
+                <!--<configuration>-->
+                    <!--<encoding>UTF-8</encoding>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 

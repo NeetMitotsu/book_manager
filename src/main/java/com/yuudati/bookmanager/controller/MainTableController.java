@@ -81,7 +81,7 @@ public class MainTableController implements Initializable {
     private void initTableView() {
         mainTableView.setEditable(true);
         // 行号
-        rowNumCol.setCellFactory(column -> new TableCell<>() {
+        rowNumCol.setCellFactory(column -> new TableCell<Book, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
