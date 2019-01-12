@@ -31,9 +31,7 @@ public class Main extends Application {
         mainTableController.setScene(scene);
         scene.getStylesheets().add(getClass().getResource("/application.css").toExternalForm());
         stage.setScene(scene);
-        stage.setOnCloseRequest(event -> {
-            Platform.exit();
-        });
+        stage.setOnCloseRequest(event -> Platform.exit());
         log.info("启动......");
         stage.show();
     }

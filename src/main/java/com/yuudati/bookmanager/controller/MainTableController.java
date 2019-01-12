@@ -9,13 +9,11 @@ import com.yuudati.bookmanager.entity.FileActionTask;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.fxml.JavaFXBuilderFactory;
-import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -28,6 +26,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.File;
@@ -37,7 +36,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -235,7 +233,6 @@ public class MainTableController implements Initializable {
 
     /**
      * 选择目标路径
-     *
      */
     public void switchToPath() {
         File toPath = directoryChoose("选择目标路径", toPathTextField);
@@ -288,8 +285,8 @@ public class MainTableController implements Initializable {
         return flag.get();
     }
 
-    @FXML
-    private void showProgress(){
+    @NotNull
+    private ProgressController showProgress(int count, int total) {
         // int count, int total
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
@@ -297,48 +294,66 @@ public class MainTableController implements Initializable {
             fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
             Parent root = fxmlLoader.load();
             Stage progressStage = new Stage(StageStyle.TRANSPARENT);
+            progressStage.setAlwaysOnTop(true);
             progressStage.setScene(new Scene(root));
             ProgressController controller = fxmlLoader.getController();
-            controller.init(1, 100, progressStage);
+            controller.init(count, total, progressStage);
             progressStage.show();
+            return controller;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
 
     /**
      * 只移动
-     *
      */
-    public void onlyMove() {
+    public void onlyMove() throws InterruptedException {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-        ForkJoinTask<Boolean> task = new FileActionTask(books, FileActionTask.MOVE);
-        Boolean result = forkJoinPool.invoke(task);
-        if (Boolean.TRUE.equals(result)) {
-            showAlert("移动完成");
-        } else {
-            showAlert("移动失败");
-        }
+        // 展示一个进度条
+        ProgressController progressController = showProgress(0, books.size());
+        new Thread(() -> {
+            ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.MOVE);
+            Boolean result = forkJoinPool.invoke(task);
+            Platform.runLater(() -> {
+                if (Boolean.TRUE.equals(result)) {
+                    showAlert("移动完成");
+                } else {
+                    progressController.getStage().close();
+                    showAlert("移动失败");
+                }
+            });
+
+
+        }).start();
     }
 
     /**
      * 只重命名
-     *
      */
-    public void onlyRename() {
+    public void onlyRename() throws InterruptedException {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-        ForkJoinTask<Boolean> task = new FileActionTask(books, FileActionTask.RENAME);
-        Boolean result = forkJoinPool.invoke(task);
-        if (Boolean.TRUE.equals(result)) {
-            showAlert("重命名完成");
-        } else {
-            showAlert("重命名失败");
-        }
+        // 展示一个进度条
+        ProgressController progressController = showProgress(0, books.size());
+        new Thread(() -> {
+            ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.RENAME);
+            Boolean result = forkJoinPool.invoke(task);
+            Platform.runLater(() -> {
+                if (Boolean.TRUE.equals(result)) {
+                    showAlert("重命名完成");
+                } else {
+                    Platform.runLater(() -> progressController.getStage().close());
+                    showAlert("重命名失败");
+                }
+            });
+        }).start();
+
     }
 
     /**
@@ -346,17 +361,26 @@ public class MainTableController implements Initializable {
      *
      * @param actionEvent
      */
-    public void moveAndRename(ActionEvent actionEvent) {
+    public void moveAndRename(ActionEvent actionEvent) throws InterruptedException {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-        ForkJoinTask<Boolean> task = new FileActionTask(books, FileActionTask.MOVE_RENAME);
-        Boolean result = forkJoinPool.invoke(task);
-        if (Boolean.TRUE.equals(result)) {
-            showAlert("操作完成");
-        } else {
-            showAlert("操作失败");
-        }
+        // 展示一个进度条
+        ProgressController progressController = showProgress(0, books.size());
+        new Thread(() -> {
+            ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.MOVE_RENAME);
+            Boolean result = forkJoinPool.invoke(task);
+            Platform.runLater(() -> {
+                if (Boolean.TRUE.equals(result)) {
+                    showAlert("操作完成");
+                } else {
+                    Platform.runLater(() -> progressController.getStage().close());
+                    showAlert("操作失败");
+                }
+            });
+
+        }).start();
+
     }
 
     public Scene getScene() {

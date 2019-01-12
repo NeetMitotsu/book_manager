@@ -43,14 +43,7 @@ public class ProgressController implements Initializable {
                     @Override
                     protected Integer call() {
                         while (getCount() < total) {
-                            int count1 = getCount();
-                            setCount(++count1);
-                            try {
-                                Thread.sleep(50);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            updateProgress(getCount(), 100);
+                            updateProgress(getCount(), total);
                         }
                         return null;
                     }

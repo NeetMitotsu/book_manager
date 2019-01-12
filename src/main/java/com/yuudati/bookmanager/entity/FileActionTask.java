@@ -1,5 +1,7 @@
 package com.yuudati.bookmanager.entity;
 
+import com.yuudati.bookmanager.controller.ProgressController;
+
 import java.io.*;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
@@ -27,21 +29,24 @@ public class FileActionTask extends RecursiveTask<Boolean> {
      */
     public static final int MOVE_RENAME = MOVE | RENAME;
 
-    private static final int THRESHOLD = 100;
+    private int threshold;
     private List<Book> fileList;
     private int type;
+    private ProgressController progressController;
 
 
-    public FileActionTask(List<Book> fileList, int type) {
+    public FileActionTask(List<Book> fileList, ProgressController progressController, int type) {
         this.fileList = fileList;
         this.type = type;
+        this.threshold = fileList.size() / Runtime.getRuntime().availableProcessors();
+        this.progressController = progressController;
     }
 
     @Override
     protected Boolean compute() {
         // 任务足够小
         boolean flag = false;
-        if (fileList.size() <= THRESHOLD) {
+        if (fileList.size() <= threshold) {
             switch (type) {
                 case MOVE:
                     flag = move(fileList);
@@ -59,8 +64,8 @@ public class FileActionTask extends RecursiveTask<Boolean> {
         }
         // 任务太大
         int middle = fileList.size() / 2;
-        FileActionTask fileTask1 = new FileActionTask(this.fileList.subList(0, middle), this.type);
-        FileActionTask fileTask2 = new FileActionTask(this.fileList.subList(middle, this.fileList.size()), this.type);
+        FileActionTask fileTask1 = new FileActionTask(this.fileList.subList(0, middle), progressController, this.type);
+        FileActionTask fileTask2 = new FileActionTask(this.fileList.subList(middle, this.fileList.size()), progressController, this.type);
         invokeAll(fileTask1, fileTask2);
         boolean taskResult1 = fileTask1.join();
         boolean taskResult2 = fileTask2.join();
@@ -98,6 +103,8 @@ public class FileActionTask extends RecursiveTask<Boolean> {
             if (copyFile(book.getOldFile(), newFile)) {
                 completeCount++;
                 book.setOldFile(newFile);
+                int count = progressController.getCount();
+                progressController.setCount(++count);
             }
         }
         return completeCount == fileList.size();
@@ -124,6 +131,8 @@ public class FileActionTask extends RecursiveTask<Boolean> {
             File newFile = checkExist(toDir, oldFileName.substring(0, oldFileName.lastIndexOf(".")), oldFileName.substring(oldFileName.lastIndexOf(".")));
             if (copyFile(oldFile, newFile)) {
                 completeCount++;
+                int count = progressController.getCount();
+                progressController.setCount(++count);
             }
         }
         return completeCount == fileList.size();
@@ -146,6 +155,8 @@ public class FileActionTask extends RecursiveTask<Boolean> {
             if (oldFile.renameTo(newFile)) {
                 book.setOldFile(newFile);
                 completeCount++;
+                int count = progressController.getCount();
+                progressController.setCount(++count);
             }
         }
         return completeCount == fileList.size();
