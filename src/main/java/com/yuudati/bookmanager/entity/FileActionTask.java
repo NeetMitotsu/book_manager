@@ -1,6 +1,7 @@
 package com.yuudati.bookmanager.entity;
 
 import com.yuudati.bookmanager.controller.ProgressController;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.concurrent.RecursiveTask;
 /**
  * 文件操作工具类
  *
- * @Author Administrator李新栋 [lxd3808@163.com]
+ * @author  Administrator李新栋 [lxd3808@163.com]
  * @Date 2019/1/10 9:43
  */
 public class FileActionTask extends RecursiveTask<Boolean> {
@@ -35,7 +36,7 @@ public class FileActionTask extends RecursiveTask<Boolean> {
     private ProgressController progressController;
 
 
-    public FileActionTask(List<Book> fileList, ProgressController progressController, int type) {
+    public FileActionTask(@NotNull List<Book> fileList, ProgressController progressController, int type) {
         this.fileList = fileList;
         this.type = type;
         this.threshold = fileList.size() / Runtime.getRuntime().availableProcessors();
@@ -69,18 +70,17 @@ public class FileActionTask extends RecursiveTask<Boolean> {
         invokeAll(fileTask1, fileTask2);
         boolean taskResult1 = fileTask1.join();
         boolean taskResult2 = fileTask2.join();
-        boolean result = taskResult1 && taskResult2;
-        return result;
+        return taskResult1 && taskResult2;
     }
 
     /**
      * 移动并重命名
      *
-     * @param fileList
+     * @param fileList 文件列表
      * @return
      * @throws IOException
      */
-    protected boolean moveAndRename(List<Book> fileList) {
+    private boolean moveAndRename(@NotNull List<Book> fileList) {
         int completeCount = 0;
         for (Book book :
                 fileList) {
@@ -116,7 +116,7 @@ public class FileActionTask extends RecursiveTask<Boolean> {
      * @param fileList
      * @return
      */
-    protected boolean move(List<Book> fileList) {
+    private boolean move(List<Book> fileList) {
         int completeCount = 0;
         for (Book book :
                 fileList) {
@@ -143,7 +143,7 @@ public class FileActionTask extends RecursiveTask<Boolean> {
      *
      * @return
      */
-    protected boolean rename(List<Book> fileList) {
+    private boolean rename(@NotNull List<Book> fileList) {
         int completeCount = 0;
         for (Book book :
                 fileList) {
@@ -170,7 +170,7 @@ public class FileActionTask extends RecursiveTask<Boolean> {
      * @param fileExtension 文件后缀
      * @return 不重名的文件
      */
-    private File checkExist(File dir, String fileName, String fileExtension) {
+    private File checkExist(@NotNull File dir, String fileName, String fileExtension) {
         if (!dir.exists()) {
             dir.mkdirs();
         }
@@ -184,11 +184,11 @@ public class FileActionTask extends RecursiveTask<Boolean> {
     /**
      * 拷贝文件
      */
-    private boolean copyFile(File fromFile, File toFile) {
+    private boolean copyFile(@NotNull File fromFile,@NotNull File toFile) {
         boolean flag;
         try {
-            if (!fromFile.exists()) {
-                fromFile.createNewFile();
+            if (!toFile.exists()) {
+                toFile.createNewFile();
             }
             FileInputStream fileInputStream = new FileInputStream(fromFile);
             FileOutputStream fileOutputStream = new FileOutputStream(toFile);

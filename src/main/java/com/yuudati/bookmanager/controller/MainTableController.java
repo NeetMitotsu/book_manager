@@ -9,7 +9,6 @@ import com.yuudati.bookmanager.entity.FileActionTask;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -27,6 +26,7 @@ import javafx.stage.StageStyle;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.File;
@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
- * @Author Administrator李新栋 [lxd3808@163.com]
+ * @author  Administrator李新栋 [lxd3808@163.com]
  * @Date 2019/1/8 17:03
  */
 @Data
@@ -184,9 +184,8 @@ public class MainTableController implements Initializable {
     /**
      * 选择路径
      *
-     * @param event
      */
-    public void switchFromPath(ActionEvent event) {
+    public void switchFromPath() {
         File dir = directoryChoose("选择原路径", fromPathTextField);
         assert dir != null;
         File[] files = dir.listFiles();
@@ -214,10 +213,10 @@ public class MainTableController implements Initializable {
     /**
      * 迭代获取目录下所有文件列表
      *
-     * @param file
-     * @param fileList
+     * @param file 文件路径
+     * @param fileList 结果输出
      */
-    private void getFileList(File file, List<File> fileList) {
+    private void getFileList(@NotNull File file, List<File> fileList) {
         File[] fs = file.listFiles();
         if (fs != null && fs.length > 0) {
             for (File f : fs) {
@@ -236,6 +235,7 @@ public class MainTableController implements Initializable {
      */
     public void switchToPath() {
         File toPath = directoryChoose("选择目标路径", toPathTextField);
+        assert toPath != null;
         if (!toPath.exists() && showAlert("该路径不存在, 是否创建")) {
             toPath.mkdirs();
         }
@@ -250,7 +250,8 @@ public class MainTableController implements Initializable {
 
     }
 
-    public File directoryChoose(String title, TextField showField) {
+    @Nullable
+    private File directoryChoose(String title, TextField showField) {
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle(title);
         File file = dirChooser.showDialog(primaryStage);
@@ -272,8 +273,9 @@ public class MainTableController implements Initializable {
     /**
      * 打开一个提醒框
      *
-     * @param text
+     * @param text info
      */
+    @NotNull
     private Boolean showAlert(String text) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.titleProperty().set("信息");
@@ -286,7 +288,7 @@ public class MainTableController implements Initializable {
     }
 
     @NotNull
-    private ProgressController showProgress(int count, int total) {
+    private ProgressController showProgress(int total) {
         // int count, int total
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
@@ -297,7 +299,7 @@ public class MainTableController implements Initializable {
             progressStage.setAlwaysOnTop(true);
             progressStage.setScene(new Scene(root));
             ProgressController controller = fxmlLoader.getController();
-            controller.init(count, total, progressStage);
+            controller.init(0, total, progressStage);
             progressStage.show();
             return controller;
         } catch (IOException e) {
@@ -310,12 +312,12 @@ public class MainTableController implements Initializable {
     /**
      * 只移动
      */
-    public void onlyMove() throws InterruptedException {
+    public void onlyMove() {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
-        ProgressController progressController = showProgress(0, books.size());
+        ProgressController progressController = showProgress(books.size());
         new Thread(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.MOVE);
             Boolean result = forkJoinPool.invoke(task);
@@ -335,12 +337,12 @@ public class MainTableController implements Initializable {
     /**
      * 只重命名
      */
-    public void onlyRename() throws InterruptedException {
+    public void onlyRename() {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
-        ProgressController progressController = showProgress(0, books.size());
+        ProgressController progressController = showProgress(books.size());
         new Thread(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.RENAME);
             Boolean result = forkJoinPool.invoke(task);
@@ -359,14 +361,13 @@ public class MainTableController implements Initializable {
     /**
      * 移动并重命名
      *
-     * @param actionEvent
      */
-    public void moveAndRename(ActionEvent actionEvent) throws InterruptedException {
+    public void moveAndRename() {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
-        ProgressController progressController = showProgress(0, books.size());
+        ProgressController progressController = showProgress(books.size());
         new Thread(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.MOVE_RENAME);
             Boolean result = forkJoinPool.invoke(task);
@@ -382,21 +383,4 @@ public class MainTableController implements Initializable {
         }).start();
 
     }
-
-    public Scene getScene() {
-        return scene;
-    }
-
-    public void setScene(Scene scene) {
-        this.scene = scene;
-    }
-
-    public Stage getPrimaryStage() {
-        return primaryStage;
-    }
-
-    public void setPrimaryStage(Stage primaryStage) {
-        this.primaryStage = primaryStage;
-    }
-
 }
