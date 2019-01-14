@@ -1,6 +1,7 @@
 package com.yuudati.bookmanager.entity;
 
 import com.yuudati.bookmanager.controller.ProgressController;
+import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -10,9 +11,10 @@ import java.util.concurrent.RecursiveTask;
 /**
  * 文件操作工具类
  *
- * @author  Administrator李新栋 [lxd3808@163.com]
+ * @author Administrator李新栋 [lxd3808@163.com]
  * @Date 2019/1/10 9:43
  */
+@Data
 public class FileActionTask extends RecursiveTask<Boolean> {
 
     private static final long serialVersionUID = 7743951161907313240L;
@@ -30,7 +32,7 @@ public class FileActionTask extends RecursiveTask<Boolean> {
      */
     public static final int MOVE_RENAME = MOVE | RENAME;
 
-    private int threshold;
+    private double threshold;
     private List<Book> fileList;
     private int type;
     private ProgressController progressController;
@@ -39,7 +41,14 @@ public class FileActionTask extends RecursiveTask<Boolean> {
     public FileActionTask(@NotNull List<Book> fileList, ProgressController progressController, int type) {
         this.fileList = fileList;
         this.type = type;
-        this.threshold = fileList.size() / Runtime.getRuntime().availableProcessors();
+        this.threshold = Math.ceil(fileList.size() / Runtime.getRuntime().availableProcessors());
+        this.progressController = progressController;
+    }
+
+    public FileActionTask(@NotNull List<Book> fileList, double threshold, ProgressController progressController, int type) {
+        this.fileList = fileList;
+        this.type = type;
+        this.threshold = threshold;
         this.progressController = progressController;
     }
 
@@ -47,7 +56,7 @@ public class FileActionTask extends RecursiveTask<Boolean> {
     protected Boolean compute() {
         // 任务足够小
         boolean flag = false;
-        if (fileList.size() <= threshold) {
+        if (fileList.size() <= this.getThreshold()) {
             switch (type) {
                 case MOVE:
                     flag = move(fileList);
@@ -65,8 +74,8 @@ public class FileActionTask extends RecursiveTask<Boolean> {
         }
         // 任务太大
         int middle = fileList.size() / 2;
-        FileActionTask fileTask1 = new FileActionTask(this.fileList.subList(0, middle), progressController, this.type);
-        FileActionTask fileTask2 = new FileActionTask(this.fileList.subList(middle, this.fileList.size()), progressController, this.type);
+        FileActionTask fileTask1 = new FileActionTask(this.fileList.subList(0, middle), this.threshold, progressController, this.type);
+        FileActionTask fileTask2 = new FileActionTask(this.fileList.subList(middle, this.fileList.size()), this.threshold, progressController, this.type);
         invokeAll(fileTask1, fileTask2);
         boolean taskResult1 = fileTask1.join();
         boolean taskResult2 = fileTask2.join();
@@ -86,9 +95,9 @@ public class FileActionTask extends RecursiveTask<Boolean> {
                 fileList) {
             String toPath = book.getToPath() +
                     File.separator +
-                    book.getAuthor() +
+                    book.getArtist() +
                     File.separator +
-                    book.getTheme();
+                    book.getParody();
             File dir = new File(toPath);
             if (!dir.exists()) {
                 // 路径不存在, 创建
@@ -123,9 +132,9 @@ public class FileActionTask extends RecursiveTask<Boolean> {
             final File oldFile = book.getOldFile();
             String toPath = book.getToPath() +
                     File.separator +
-                    book.getAuthor() +
+                    book.getArtist() +
                     File.separator +
-                    book.getTheme();
+                    book.getParody();
             final File toDir = new File(toPath);
             final String oldFileName = oldFile.getName();
             File newFile = checkExist(toDir, oldFileName.substring(0, oldFileName.lastIndexOf(".")), oldFileName.substring(oldFileName.lastIndexOf(".")));
@@ -184,7 +193,7 @@ public class FileActionTask extends RecursiveTask<Boolean> {
     /**
      * 拷贝文件
      */
-    private boolean copyFile(@NotNull File fromFile,@NotNull File toFile) {
+    private boolean copyFile(@NotNull File fromFile, @NotNull File toFile) {
         boolean flag;
         try {
             if (!toFile.exists()) {

@@ -1,6 +1,6 @@
 package com.yuudati.bookmanager;
 
-import com.yuudati.bookmanager.controller.MainTableController;
+import com.yuudati.bookmanager.controller.MainController;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -20,18 +20,17 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/mainTable.fxml"));
+        final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Main.fxml"));
         Parent root = fxmlLoader.load();
         stage.setTitle("Book Manager V1.0");
-        final Scene scene = new Scene(root, 1366, 768);
+        final Scene scene = new Scene(root, 1366, 800);
 
-        // 传递参数给controller
-        MainTableController mainTableController = fxmlLoader.getController();
-        mainTableController.setPrimaryStage(stage);
-        mainTableController.setScene(scene);
         scene.getStylesheets().add(getClass().getResource("/application.css").toExternalForm());
         stage.setScene(scene);
-        stage.setOnCloseRequest(event -> Platform.exit());
+        stage.setOnCloseRequest(event -> {
+            // TODO 保存数据
+            Platform.exit();
+        });
         log.info("启动......");
         stage.show();
     }

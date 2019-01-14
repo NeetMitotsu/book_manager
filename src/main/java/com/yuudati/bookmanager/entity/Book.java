@@ -22,39 +22,39 @@ import java.util.regex.Pattern;
 @Slf4j
 public class Book {
 
-    private static final String patternStr = "\\(\\S+\\)(\\s*)(\\[.+])+(.)+(\\(.+\\))* *(\\[.+])* *(\\[.+])*";
-    private static final Pattern fileNamePattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
+    private static final String PATTERN_STR = "\\(\\S+\\)(\\s*)(\\[.+])+(.)+(\\(.+\\))* *(\\[.+])* *(\\[.+])*";
+    private static final Pattern FILE_NAME_PATTERN = Pattern.compile(PATTERN_STR, Pattern.CASE_INSENSITIVE);
 
     /**
      * 来源匹配
      */
-    private static final Pattern exhibitionPattern = Pattern.compile("\\((\\w*)+\\)");
+    private static final Pattern EXHIBITION_PATTERN = Pattern.compile("\\((\\w*)+\\)");
     /**
      * 作者匹配
      */
-    private static final Pattern authorPattern = Pattern.compile("\\[.+]\\s+");
+    private static final Pattern ARTIST_PATTERN = Pattern.compile("\\[.+]\\s+");
     /**
      * 本名匹配
      */
-    private static final Pattern bookNamePattern = Pattern.compile("].+\\[");
+    private static final Pattern BOOK_NAME_PATTERN = Pattern.compile("].+\\[");
     /**
      * 题材匹配
      */
-    private static final Pattern themePattern = Pattern.compile("\\( *(\\S|\\w)* *(\\S|\\w) *\\)");
+    private static final Pattern PARODY_PATTERN = Pattern.compile("\\( *(\\S|\\w)* *(\\S|\\w) *\\)");
     /**
      * 汉化组匹配
      */
-    private static final Pattern translatePattern = Pattern.compile("\\[\\S+]");
+    private static final Pattern TRANSLATE_PATTERN = Pattern.compile("\\[\\S+]");
 
     /**
      * 匹配组
      */
     private static Pattern[] patterns = {
-            exhibitionPattern,
-            authorPattern,
-            bookNamePattern,
-            themePattern,
-            translatePattern,
+            EXHIBITION_PATTERN,
+            ARTIST_PATTERN,
+            BOOK_NAME_PATTERN,
+            PARODY_PATTERN,
+            TRANSLATE_PATTERN,
     };
 
     /**
@@ -86,19 +86,20 @@ public class Book {
     /**
      * 作者
      */
-    private StringProperty author;
+    private StringProperty artist;
     /**
      * 本名
      */
     private StringProperty bookName;
     /**
+     * 题材
+     */
+    private StringProperty parody;
+    /**
      * 汉化组
      */
     private StringProperty translate;
-    /**
-     * 题材
-     */
-    private StringProperty theme;
+
 
     private String[] newInfo = new String[5];
 
@@ -121,7 +122,7 @@ public class Book {
                 exhibition.endsWith(")") ? exhibition.length() - 1 : exhibition.length())
         );
         String author = newInfo[1];
-        this.author = new SimpleStringProperty(author.substring(
+        this.artist = new SimpleStringProperty(author.substring(
                 author.startsWith("[") ? 1 : 0,
                 author.endsWith("]") ? author.length() - 1 : author.length())
         );
@@ -131,7 +132,7 @@ public class Book {
                 bookName.endsWith("[") ? bookName.length() - 1 : bookName.length())
         );
         String theme = newInfo[3];
-        this.theme = new SimpleStringProperty(theme.substring(
+        this.parody = new SimpleStringProperty(theme.substring(
                 theme.startsWith("(") ? 1 : 0,
                 theme.endsWith(")") ? theme.length() - 1 : theme.length())
         );
@@ -144,12 +145,12 @@ public class Book {
 
     public void updateNewName(){
         this.newName.set(String.format("(%s)_[%s]_%s_(%s)_[%s]",
-                this.getExhibition(), this.getAuthor(), this.getBookName(), this.getTheme(), this.getTranslate()));
+                this.getExhibition(), this.getArtist(), this.getBookName(), this.getParody(), this.getTranslate()));
     }
 
 
-    public void setBaseInfo(String oldName) {
-        if(fileNamePattern.matcher(oldName).find()){
+    private void setBaseInfo(String oldName) {
+        if(FILE_NAME_PATTERN.matcher(oldName).find()){
             Matcher matcher;
             for (int i = 0; i < patterns.length; i++) {
                 matcher = patterns[i].matcher(oldName);
@@ -245,16 +246,16 @@ public class Book {
         this.exhibition.set(exhibition);
     }
 
-    public String getAuthor() {
-        return author.get();
+    public String getArtist() {
+        return artist.get();
     }
 
-    public StringProperty authorProperty() {
-        return author;
+    public StringProperty artistProperty() {
+        return artist;
     }
 
-    public void setAuthor(String author) {
-        this.author.set(author);
+    public void setArtist(String artist) {
+        this.artist.set(artist);
     }
 
     public String getBookName() {
@@ -281,31 +282,19 @@ public class Book {
         this.translate.set(translate);
     }
 
-    public String getTheme() {
-        return theme.get();
+    public String getParody() {
+        return parody.get();
     }
 
-    public StringProperty themeProperty() {
-        return theme;
+    public StringProperty parodyProperty() {
+        return parody;
     }
 
-    public void setTheme(String theme) {
-        this.theme.set(theme);
-    }
-
-    public ObjectProperty<Button> getPreviewButton() {
-        return previewButton;
-    }
-
-    public void setPreviewButton(ObjectProperty<Button> previewButton) {
-        this.previewButton = previewButton;
+    public void setParody(String parody) {
+        this.parody.set(parody);
     }
 
     public String[] getNewInfo() {
         return newInfo;
-    }
-
-    public void setNewInfo(String[] newInfo) {
-        this.newInfo = newInfo;
     }
 }

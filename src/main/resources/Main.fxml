@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane fx:id="parentPane" prefWidth="1366.0" xmlns="http://javafx.com/javafx/10.0.1"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.yuudati.bookmanager.controller.MainController">
+    <TabPane fx:id="tabPane" prefWidth="1366.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="32.0"
+             tabMaxWidth="75.0" tabMinHeight="32.0" tabMinWidth="75.0">
+        <Tab text="移动">
+            <fx:include fx:id="moveAndRenameTab" source="MoveAndRename.fxml"/>
+        </Tab>
+        <Tab text="管理/搜索">
+            <fx:include fx:id="searchTab" source="Search.fxml"/>
+        </Tab>
+    </TabPane>
+    <!--</ScrollPane>-->
+</AnchorPane>

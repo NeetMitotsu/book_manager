@@ -3,9 +3,11 @@ package com.yuudati.bookmanager.controller;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
+import com.luhuiguo.chinese.ChineseUtils;
 import com.yuudati.bookmanager.entity.Book;
 import com.yuudati.bookmanager.entity.ButtonCell;
 import com.yuudati.bookmanager.entity.FileActionTask;
+import com.yuudati.bookmanager.util.ThreadUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -24,7 +26,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,21 +38,25 @@ import java.util.ResourceBundle;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * @author  Administrator李新栋 [lxd3808@163.com]
- * @Date 2019/1/8 17:03
+ * @Author Administrator李新栋 [lxd3808@163.com]
+ * @Date 2019/1/14 11:35
  */
 @Data
-@Slf4j
-public class MainTableController implements Initializable {
+public class MoveAndRenameController implements Initializable {
+
+    private MainController mainController;
 
     private Scene scene;
     private Stage primaryStage;
 
     @FXML
-    private Pane pane;
+    private Pane parentPane;
+    @FXML
+    public TabPane tabPane;
 
     @FXML
     private Button fromPathButton;
@@ -76,12 +81,14 @@ public class MainTableController implements Initializable {
     @FXML
     private TableColumn<Book, Button> actionCol;
 
+    void injectMainController(MainController mainController) {
+        this.mainController = mainController;
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        mainTableView.prefWidthProperty().bind(pane.widthProperty());
+        mainTableView.prefWidthProperty().bind(parentPane.widthProperty());
         mainTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        mainTableView.prefWidthProperty().bind(pane.widthProperty());
         initTableView();
     }
 
@@ -111,7 +118,7 @@ public class MainTableController implements Initializable {
         toNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         toNameCol.setOnEditCommit(event -> {
             Book book = mainTableView.getSelectionModel().getSelectedItem();
-            book.setNewName(event.getNewValue());
+            book.setNewName(event.getNewValue().trim());
         });
         toNameCol.setOnEditCancel(toNameCol.getOnEditCommit());
         exhibitionCol.setCellValueFactory(cellData -> cellData.getValue().exhibitionProperty());
@@ -119,18 +126,18 @@ public class MainTableController implements Initializable {
         exhibitionCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setExhibition(event.getNewValue());
+                book.setExhibition(event.getNewValue().toUpperCase().trim());
                 book.updateNewName();
             });
 
         });
         exhibitionCol.setOnEditCancel(exhibitionCol.getOnEditCommit());
-        authorCol.setCellValueFactory(cellData -> cellData.getValue().authorProperty());
+        authorCol.setCellValueFactory(cellData -> cellData.getValue().artistProperty());
         authorCol.setCellFactory(TextFieldTableCell.forTableColumn());
         authorCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setAuthor(event.getNewValue());
+                book.setArtist(event.getNewValue().trim());
                 book.updateNewName();
             });
         });
@@ -140,17 +147,17 @@ public class MainTableController implements Initializable {
         bookNameCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setBookName(event.getNewValue());
+                book.setBookName(event.getNewValue().trim());
                 book.updateNewName();
             });
         });
         bookNameCol.setOnEditCancel(bookNameCol.getOnEditCommit());
-        themeCol.setCellValueFactory(cellData -> cellData.getValue().themeProperty());
+        themeCol.setCellValueFactory(cellData -> cellData.getValue().parodyProperty());
         themeCol.setCellFactory(TextFieldTableCell.forTableColumn());
         themeCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setTheme(event.getNewValue());
+                book.setParody(event.getNewValue().toUpperCase().trim());
                 book.updateNewName();
             });
         });
@@ -160,7 +167,8 @@ public class MainTableController implements Initializable {
         translateCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setTranslate(event.getNewValue());
+
+                book.setTranslate(ChineseUtils.toSimplified(event.getNewValue().trim()));
                 book.updateNewName();
             });
         });
@@ -182,10 +190,12 @@ public class MainTableController implements Initializable {
     }
 
     /**
-     * 选择路径
-     *
+     * 选择路径, 并校验文件, 返回压缩包文件
      */
     public void switchFromPath() {
+        String patternStr = ".+\\.(rar|zip|7z|tar|gz)$";
+        Pattern pattern = Pattern.compile(patternStr);
+
         File dir = directoryChoose("选择原路径", fromPathTextField);
         assert dir != null;
         File[] files = dir.listFiles();
@@ -195,10 +205,16 @@ public class MainTableController implements Initializable {
             List<File> fileList = Lists.newArrayList();
             if (f.isDirectory()) {
                 getFileList(f, fileList);
-                multiset.addAll(fileList);
+                for (File file: fileList){
+                    if (pattern.matcher(file.getName()).find()){
+                        multiset.add(file);
+                    }
+                }
             }
             if (f.isFile()) {
-                multiset.add(f);
+               if (pattern.matcher(f.getName()).find()){
+                   multiset.add(f);
+               }
             }
         }
 
@@ -213,7 +229,7 @@ public class MainTableController implements Initializable {
     /**
      * 迭代获取目录下所有文件列表
      *
-     * @param file 文件路径
+     * @param file     文件路径
      * @param fileList 结果输出
      */
     private void getFileList(@NotNull File file, List<File> fileList) {
@@ -244,7 +260,7 @@ public class MainTableController implements Initializable {
             tableItems.forEach(book -> {
                 book.setToPath(toPath.getPath());
                 book.setNewName(String.format("(%s)_[%s]_%s_(%s)_[%s]",
-                        book.getExhibition(), book.getAuthor(), book.getBookName(), book.getTheme(), book.getTranslate()));
+                        book.getExhibition(), book.getArtist(), book.getBookName(), book.getParody(), book.getTranslate()));
             });
         }
 
@@ -292,7 +308,7 @@ public class MainTableController implements Initializable {
         // int count, int total
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(getClass().getResource("/progressBar.fxml"));
+            fxmlLoader.setLocation(getClass().getResource("/ProgressBar.fxml"));
             fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
             Parent root = fxmlLoader.load();
             Stage progressStage = new Stage(StageStyle.TRANSPARENT);
@@ -318,7 +334,8 @@ public class MainTableController implements Initializable {
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
         ProgressController progressController = showProgress(books.size());
-        new Thread(() -> {
+
+        ThreadUtil.getThreadPool().submit(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.MOVE);
             Boolean result = forkJoinPool.invoke(task);
             Platform.runLater(() -> {
@@ -329,9 +346,7 @@ public class MainTableController implements Initializable {
                     showAlert("移动失败");
                 }
             });
-
-
-        }).start();
+        });
     }
 
     /**
@@ -343,7 +358,7 @@ public class MainTableController implements Initializable {
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
         ProgressController progressController = showProgress(books.size());
-        new Thread(() -> {
+        ThreadUtil.getThreadPool().submit(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.RENAME);
             Boolean result = forkJoinPool.invoke(task);
             Platform.runLater(() -> {
@@ -354,13 +369,11 @@ public class MainTableController implements Initializable {
                     showAlert("重命名失败");
                 }
             });
-        }).start();
-
+        });
     }
 
     /**
      * 移动并重命名
-     *
      */
     public void moveAndRename() {
         final ObservableList<Book> books = mainTableView.getItems();
@@ -368,7 +381,7 @@ public class MainTableController implements Initializable {
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
         ProgressController progressController = showProgress(books.size());
-        new Thread(() -> {
+        ThreadUtil.getThreadPool().submit(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.MOVE_RENAME);
             Boolean result = forkJoinPool.invoke(task);
             Platform.runLater(() -> {
@@ -379,8 +392,6 @@ public class MainTableController implements Initializable {
                     showAlert("操作失败");
                 }
             });
-
-        }).start();
-
+        });
     }
 }

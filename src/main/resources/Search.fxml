@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.shape.Line?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.yuudati.bookmanager.controller.SearchController"
+            prefWidth="1366.0">
+    <children>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="768.0" prefWidth="1366.0">
+            <children>
+                <TextField fx:id="toPathTextField1" editable="false" layoutX="194.0" layoutY="14.0"
+                           prefHeight="40.0" prefWidth="600.0" text="目标路径"/>
+                <Button fx:id="toPathButton1" layoutX="14.0" layoutY="14.0" mnemonicParsing="false"
+                        prefHeight="40.0" prefWidth="180.0" text="目标地址"/>
+                <Label layoutX="15.0" layoutY="70.0" prefHeight="30.0" prefWidth="60.0" text="来源:"/>
+                <Label layoutX="605.0" layoutY="70.0" prefHeight="30.0" prefWidth="60.0" text="作者:"/>
+                <Label layoutX="310.0" layoutY="70.0" prefHeight="31.0" prefWidth="60.0" text="本名:"/>
+                <Label layoutX="310.0" layoutY="115.0" prefHeight="30.0" prefWidth="60.0" text="汉化组:"/>
+                <Label layoutX="15.0" layoutY="115.0" prefHeight="30.0" prefWidth="60.0" text="题材:"/>
+                <Button fx:id="toPathButton11" layoutX="883.0" layoutY="113.0" mnemonicParsing="false"
+                        prefHeight="35.0" prefWidth="115.0" text="搜索"/>
+                <ChoiceBox layoutY="70.0" prefHeight="30.0" prefWidth="190.0" AnchorPane.leftAnchor="75.0"/>
+                <ChoiceBox layoutX="15.0" layoutY="115.0" prefHeight="30.0" prefWidth="190.0"
+                           AnchorPane.leftAnchor="75.0"/>
+                <Line endX="1366.0" endY="160.0" startY="160.0"/>
+                <TextField layoutX="370.0" layoutY="70.0" prefHeight="30.0" prefWidth="190.0"/>
+                <TextField layoutX="665.0" layoutY="65.0" prefHeight="30.0" prefWidth="190.0"/>
+                <TextField layoutX="370.0" layoutY="110.0" prefHeight="30.0" prefWidth="190.0"/>
+                <TableView layoutY="160.0" prefHeight="600.0" prefWidth="1366.0">
+                    <columns>
+                        <TableColumn prefWidth="75.0" text="行号"/>
+                        <TableColumn prefWidth="75.0" text="来源"/>
+                        <TableColumn prefWidth="75.0" text="作者"/>
+                        <TableColumn prefWidth="75.0" text="本名"/>
+                        <TableColumn prefWidth="75.0" text="题材"/>
+                        <TableColumn prefWidth="75.0" text="汉化组"/>
+                        <TableColumn prefWidth="75.0" text="属性"/>
+                        <TableColumn prefWidth="75.0" text="操作"/>
+                    </columns>
+                </TableView>
+                <Label layoutX="605.0" layoutY="115.0" prefHeight="30.0" prefWidth="60.0" text="属性:"/>
+                <TextField layoutX="665.0" layoutY="110.0" prefHeight="30.0" prefWidth="190.0"/>
+            </children>
+        </AnchorPane>
+    </children>
+
+</AnchorPane>
