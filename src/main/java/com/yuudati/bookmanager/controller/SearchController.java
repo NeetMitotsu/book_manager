@@ -1,6 +1,10 @@
 package com.yuudati.bookmanager.controller;
 
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.AnchorPane;
 import lombok.Data;
 
 import java.net.URL;
@@ -15,13 +19,18 @@ public class SearchController implements Initializable {
 
     private MainController mainController;
 
-    public void injectMainController(MainController mainController){
+    @FXML
+    private AnchorPane parentPane;
+    @FXML
+    private TableView dataTableView;
+
+    void injectMainController(MainController mainController) {
         this.mainController = mainController;
     }
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
+        dataTableView.prefWidthProperty().bind(parentPane.widthProperty());
+        dataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 }

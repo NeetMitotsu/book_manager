@@ -24,11 +24,11 @@ public class Main extends Application {
         Parent root = fxmlLoader.load();
         stage.setTitle("Book Manager V1.0");
         final Scene scene = new Scene(root, 1366, 800);
-
+        final MainController mainController = fxmlLoader.getController();
         scene.getStylesheets().add(getClass().getResource("/application.css").toExternalForm());
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> {
-            // TODO 保存数据
+            mainController.saveConfig();
             Platform.exit();
         });
         log.info("启动......");

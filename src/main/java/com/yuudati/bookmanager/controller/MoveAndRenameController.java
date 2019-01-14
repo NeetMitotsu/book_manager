@@ -77,7 +77,7 @@ public class MoveAndRenameController implements Initializable {
 
     @FXML
     private TableColumn<Book, String> rowNumCol, fromPathCol, fromNameCol, toPathCol, toNameCol,
-            exhibitionCol, authorCol, bookNameCol, themeCol, translateCol;
+            exhibitionCol, artistCol, bookNameCol, parodyCol, translateCol;
     @FXML
     private TableColumn<Book, Button> actionCol;
 
@@ -118,7 +118,10 @@ public class MoveAndRenameController implements Initializable {
         toNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         toNameCol.setOnEditCommit(event -> {
             Book book = mainTableView.getSelectionModel().getSelectedItem();
-            book.setNewName(event.getNewValue().trim());
+            final String newValue = event.getNewValue();
+            if (!Strings.isNullOrEmpty(newValue)) {
+                book.setNewName(newValue.trim());
+            }
         });
         toNameCol.setOnEditCancel(toNameCol.getOnEditCommit());
         exhibitionCol.setCellValueFactory(cellData -> cellData.getValue().exhibitionProperty());
@@ -126,50 +129,64 @@ public class MoveAndRenameController implements Initializable {
         exhibitionCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setExhibition(event.getNewValue().toUpperCase().trim());
-                book.updateNewName();
+                final String newValue = event.getNewValue();
+                if (!Strings.isNullOrEmpty(newValue)) {
+                    book.setExhibition(newValue.toUpperCase().trim());
+                    book.updateNewName();
+                }
             });
 
         });
         exhibitionCol.setOnEditCancel(exhibitionCol.getOnEditCommit());
-        authorCol.setCellValueFactory(cellData -> cellData.getValue().artistProperty());
-        authorCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        authorCol.setOnEditCommit(event -> {
+        artistCol.setCellValueFactory(cellData -> cellData.getValue().artistProperty());
+        artistCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        artistCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setArtist(event.getNewValue().trim());
-                book.updateNewName();
+                final String newValue = event.getNewValue();
+                if (!Strings.isNullOrEmpty(newValue)) {
+                    book.setArtist(newValue.trim());
+                    book.updateNewName();
+                }
             });
         });
-        authorCol.setOnEditCancel(authorCol.getOnEditCommit());
+        artistCol.setOnEditCancel(artistCol.getOnEditCommit());
         bookNameCol.setCellValueFactory(cellData -> cellData.getValue().bookNameProperty());
         bookNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         bookNameCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setBookName(event.getNewValue().trim());
-                book.updateNewName();
+                final String newValue = event.getNewValue();
+                if (!Strings.isNullOrEmpty(newValue)) {
+                    book.setBookName(newValue.trim());
+                    book.updateNewName();
+                }
             });
         });
         bookNameCol.setOnEditCancel(bookNameCol.getOnEditCommit());
-        themeCol.setCellValueFactory(cellData -> cellData.getValue().parodyProperty());
-        themeCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        themeCol.setOnEditCommit(event -> {
+        parodyCol.setCellValueFactory(cellData -> cellData.getValue().parodyProperty());
+        parodyCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        parodyCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-                book.setParody(event.getNewValue().toUpperCase().trim());
-                book.updateNewName();
+                final String newValue = event.getNewValue();
+                if (!Strings.isNullOrEmpty(newValue)) {
+                    book.setParody(newValue.toUpperCase().trim());
+                    book.updateNewName();
+                }
             });
         });
-        themeCol.setOnEditCancel(themeCol.getOnEditCommit());
+        parodyCol.setOnEditCancel(parodyCol.getOnEditCommit());
         translateCol.setCellValueFactory(cellData -> cellData.getValue().translateProperty());
         translateCol.setCellFactory(TextFieldTableCell.forTableColumn());
         translateCol.setOnEditCommit(event -> {
             List<Book> books = mainTableView.getSelectionModel().getSelectedItems();
             books.forEach(book -> {
-
-                book.setTranslate(ChineseUtils.toSimplified(event.getNewValue().trim()));
-                book.updateNewName();
+                final String newValue = event.getNewValue();
+                if (!Strings.isNullOrEmpty(newValue)) {
+                    book.setTranslate(ChineseUtils.toSimplified(newValue.trim()));
+                    book.updateNewName();
+                }
             });
         });
         translateCol.setOnEditCancel(translateCol.getOnEditCommit());
@@ -205,23 +222,27 @@ public class MoveAndRenameController implements Initializable {
             List<File> fileList = Lists.newArrayList();
             if (f.isDirectory()) {
                 getFileList(f, fileList);
-                for (File file: fileList){
-                    if (pattern.matcher(file.getName()).find()){
+                for (File file : fileList) {
+                    if (pattern.matcher(file.getName()).find()) {
                         multiset.add(file);
                     }
                 }
             }
             if (f.isFile()) {
-               if (pattern.matcher(f.getName()).find()){
-                   multiset.add(f);
-               }
+                if (pattern.matcher(f.getName()).find()) {
+                    multiset.add(f);
+                }
             }
         }
 
         final List<Book> fileList = multiset.elementSet().stream().map(file -> new Book(file, file.getParent(), file.getName())).collect(Collectors.toList());
-        for (Book book :
-                fileList) {
-            System.out.println(Lists.newArrayList(book.getNewInfo()));
+        // 更新
+        if (!Strings.isNullOrEmpty(toPathTextField.getText()) && !toPathTextField.getText().startsWith("目标")) {
+            fileList.forEach(book -> {
+                book.setToPath(toPathTextField.getText());
+                book.setNewName(String.format("(%s)_[%s]_%s_(%s)_[%s]",
+                        book.getExhibition(), book.getArtist(), book.getBookName(), book.getParody(), book.getTranslate()));
+            });
         }
         mainTableView.setItems(FXCollections.observableArrayList(fileList));
     }

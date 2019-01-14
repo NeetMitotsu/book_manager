@@ -34,9 +34,9 @@
                              text="原文件名"/>
                 <TableColumn fx:id="exhibitionCol" minWidth="133.0" prefWidth="133.0"
                              text="来源"/>
-                <TableColumn fx:id="authorCol" minWidth="133.0" prefWidth="133.0" text="作者"/>
+                <TableColumn fx:id="artistCol" minWidth="133.0" prefWidth="133.0" text="作者"/>
                 <TableColumn fx:id="bookNameCol" minWidth="133.0" prefWidth="133.0" text="本名"/>
-                <TableColumn fx:id="themeCol" minWidth="133.0" prefWidth="133.0" text="题材"/>
+                <TableColumn fx:id="parodyCol" minWidth="133.0" prefWidth="133.0" text="题材"/>
                 <TableColumn fx:id="translateCol" minWidth="133.0" prefWidth="133.0"
                              text="汉化组"/>
                 <TableColumn fx:id="actionCol" minWidth="133.0" prefWidth="133.0" text="操作"/>

@@ -1,48 +1,23 @@
 package com.yuudati.bookmanager.controller;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Lists;
-import com.luhuiguo.chinese.ChineseUtils;
-import com.yuudati.bookmanager.entity.Book;
-import com.yuudati.bookmanager.entity.ButtonCell;
-import com.yuudati.bookmanager.entity.FileActionTask;
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.fxml.JavaFXBuilderFactory;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
+import java.util.Enumeration;
+import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
- * @author  Administrator李新栋 [lxd3808@163.com]
+ * @author Administrator李新栋 [lxd3808@163.com]
  * @Date 2019/1/8 17:03
  */
 @Data
@@ -69,6 +44,64 @@ public class MainController implements Initializable {
         moveAndRenameTabController.injectMainController(this);
         searchTabController.injectMainController(this);
         tabPane.prefWidthProperty().bind(parentPane.widthProperty());
-
+        // 读取配置
+        this.loadConfig();
     }
+
+    /**
+     * 保存配置
+     */
+    public void saveConfig() {
+        try {
+            File dataDir = new File("./config");
+            if (!dataDir.exists()) {
+                if (!dataDir.mkdirs()) {
+                    return;
+                }
+            }
+            File configFile = new File(dataDir, "conf.properties");
+            if (!configFile.exists()) {
+                if (!configFile.createNewFile()) {
+                    return;
+                }
+            }
+            FileOutputStream outputStream = new FileOutputStream(configFile);
+            Properties prop = new Properties();
+            prop.setProperty("toPath", moveAndRenameTabController.getToPathTextField().getText());
+            prop.store(outputStream, "ToPath config");
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 读取配置
+     */
+    private void loadConfig() {
+        try {
+            File dataDir = new File("./config");
+            if (!dataDir.exists()) {
+                return;
+            }
+            File configFile = new File(dataDir, "conf.properties");
+            if (!configFile.exists()) {
+                return;
+            }
+            Properties prop = new Properties();
+            FileInputStream inputStream = new FileInputStream(configFile);
+            prop.load(inputStream);
+            final Enumeration<?> enumeration = prop.propertyNames();
+            while (enumeration.hasMoreElements()) {
+                String key = (String) enumeration.nextElement();
+                //
+                if ("toPath".equalsIgnoreCase(key)) {
+                    moveAndRenameTabController.getToPathTextField().setText(prop.getProperty(key));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
