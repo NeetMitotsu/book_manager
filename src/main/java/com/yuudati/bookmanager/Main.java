@@ -25,6 +25,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+
         final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
         Parent root = fxmlLoader.load();
         stage.setTitle("Book Manager V1.0");
