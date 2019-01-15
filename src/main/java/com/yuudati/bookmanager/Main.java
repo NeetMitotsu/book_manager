@@ -1,6 +1,8 @@
 package com.yuudati.bookmanager;
 
 import com.yuudati.bookmanager.controller.MainController;
+import com.yuudati.bookmanager.controller.MoveAndRenameController;
+import com.yuudati.bookmanager.controller.SearchController;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -18,14 +20,17 @@ import lombok.extern.slf4j.Slf4j;
 public class Main extends Application {
 
 
+    private MoveAndRenameController moveAndRenameController;
+    private SearchController searchController;
+
     @Override
     public void start(Stage stage) throws Exception {
-        final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Main.fxml"));
+        final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
         Parent root = fxmlLoader.load();
         stage.setTitle("Book Manager V1.0");
         final Scene scene = new Scene(root, 1366, 800);
         final MainController mainController = fxmlLoader.getController();
-        scene.getStylesheets().add(getClass().getResource("/application.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> {
             mainController.saveConfig();

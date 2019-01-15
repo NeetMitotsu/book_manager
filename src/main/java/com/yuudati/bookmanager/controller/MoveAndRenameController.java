@@ -56,9 +56,6 @@ public class MoveAndRenameController implements Initializable {
     @FXML
     private Pane parentPane;
     @FXML
-    public TabPane tabPane;
-
-    @FXML
     private Button fromPathButton;
     @FXML
     private Button toPathButton;
@@ -324,25 +321,30 @@ public class MoveAndRenameController implements Initializable {
         return flag.get();
     }
 
+    /**
+     * 打开一个进度条
+     * @param total 进度条长度
+     * @return 进度条controller
+     */
     @NotNull
     private ProgressController showProgress(int total) {
         // int count, int total
+        ProgressController controller = null;
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(getClass().getResource("/ProgressBar.fxml"));
+            fxmlLoader.setLocation(getClass().getResource("/fxml/ProgressBar.fxml"));
             fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
             Parent root = fxmlLoader.load();
             Stage progressStage = new Stage(StageStyle.TRANSPARENT);
             progressStage.setAlwaysOnTop(true);
             progressStage.setScene(new Scene(root));
-            ProgressController controller = fxmlLoader.getController();
+            controller = fxmlLoader.getController();
             controller.init(0, total, progressStage);
             progressStage.show();
-            return controller;
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return controller;
     }
 
 
