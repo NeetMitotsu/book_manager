@@ -8,6 +8,7 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.control.Button;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.type.Alias;
 
 import java.io.File;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.regex.Pattern;
  */
 @Data
 @Slf4j
+@Alias("book")
 public class Book {
 
     private static final String PATTERN_STR = "\\(\\S+\\)(\\s*)(\\[.+])+(.)+(\\(.+\\))* *(\\[.+])* *(\\[.+])*";
@@ -61,6 +63,11 @@ public class Book {
      * 源文件
      */
     private File oldFile;
+
+    /**
+     * 移动后的新文件
+     */
+    private File newFile;
 
     /**
      * 原路径

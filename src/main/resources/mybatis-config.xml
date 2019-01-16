@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!--配置-->
+<configuration>
+    <!--属性-->
+    <properties resource="hikari.properties"/>
+    <!--设置-->
+    <settings>
+        <!-- 全局地开启或关闭配置文件中的所有映射器已经配置的任何缓存 -->
+        <setting name="cacheEnabled" value="true"/>
+        <!--延迟加载的全局开关-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+    </settings>
+    <!--类型命名-->
+    <typeAliases>
+        <package name="com.yuudati.bookmanager.entity"/>
+    </typeAliases>
+    <!--类型处理器-->
+    <!--<typeHandlers></typeHandlers>-->
+    <!--对象工厂-->
+    <!--<objectFactory type=""/>-->
+    <!--插件-->
+    <!--<plugins>-->
+    <!--<plugin interceptor=""></plugin>-->
+    <!--</plugins>-->
+    <!--配置环境-->
+    <!--<environments default="default">-->
+        <!--&lt;!&ndash;环境变量&ndash;&gt;-->
+        <!--<environment id="default">-->
+            <!--&lt;!&ndash;事务管理器&ndash;&gt;-->
+            <!--<transactionManager type="jdbc"/>-->
+            <!--&lt;!&ndash;数据源&ndash;&gt;-->
+            <!--<dataSource type="com.yuudati.bookmanager.util.HikariCPDataSourceFactory">-->
+                <!--&lt;!&ndash;<property name="driver" value="${url}"/>&ndash;&gt;-->
+                <!--<property name="jdbcUrl" value="${sqlite.url}"/>-->
+                <!--<property name="username" value="${sqlite.username}"/>-->
+                <!--<property name="password" value="${sqlite.password}"/>-->
+            <!--</dataSource>-->
+        <!--</environment>-->
+    <!--</environments>-->
+    <!--数据库厂商标识-->
+    <!--<databaseIdProvider type=""/>-->
+    <!--映射器-->
+    <mappers>
+        <package name="com.yuudati.bookmanager.mapper"/>
+    </mappers>
+</configuration>

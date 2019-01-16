@@ -1,9 +1,15 @@
 package com.yuudati.bookmanager.entity;
 
 import com.yuudati.bookmanager.controller.ProgressController;
+import com.yuudati.bookmanager.mapper.BookInfoMapper;
+import com.yuudati.bookmanager.util.SpringContext;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
@@ -18,6 +24,10 @@ import java.util.concurrent.RecursiveTask;
 public class FileActionTask extends RecursiveTask<Boolean> {
 
     private static final long serialVersionUID = 7743951161907313240L;
+
+//    @Resource
+
+    private BookInfoMapper bookInfoMapper = (BookInfoMapper) SpringContext.getContext().getBean("bookInfoMapper");
 
     /**
      * 只移动
@@ -111,7 +121,10 @@ public class FileActionTask extends RecursiveTask<Boolean> {
             File newFile = checkExist(dir, book.getNewName(), fileExtension);
             if (copyFile(book.getOldFile(), newFile)) {
                 completeCount++;
-                book.setOldFile(newFile);
+                // 设置新文件
+                book.setNewFile(newFile);
+                final int insert = bookInfoMapper.insert(new BookInfo(book));
+                System.out.println(insert);
                 int count = progressController.getCount();
                 progressController.setCount(++count);
             }

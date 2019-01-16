@@ -3,6 +3,7 @@ package com.yuudati.bookmanager;
 import com.yuudati.bookmanager.controller.MainController;
 import com.yuudati.bookmanager.controller.MoveAndRenameController;
 import com.yuudati.bookmanager.controller.SearchController;
+import com.yuudati.bookmanager.util.SpringContext;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -10,6 +11,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
 /**
@@ -25,7 +28,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-
+        AbstractApplicationContext context = new ClassPathXmlApplicationContext("ApplicationContext.xml");
+        SpringContext.setApplicationContext(context);
         final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
         Parent root = fxmlLoader.load();
         stage.setTitle("Book Manager V1.0");
@@ -35,6 +39,7 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> {
             mainController.saveConfig();
+            context.close();
             Platform.exit();
         });
         log.info("启动......");
