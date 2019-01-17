@@ -13,6 +13,9 @@ import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.util.FileCopyUtils;
+
+import java.io.File;
 
 
 /**
@@ -28,6 +31,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        File datafile = new File("./data/book_manager.db");
+        if (!datafile.exists()){
+            File database = new File(getClass().getResource("/database/book_manager.db").toURI());
+            FileCopyUtils.copy(database, datafile);
+        }
         AbstractApplicationContext context = new ClassPathXmlApplicationContext("ApplicationContext.xml");
         SpringContext.setApplicationContext(context);
         final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
