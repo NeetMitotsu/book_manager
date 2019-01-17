@@ -2,6 +2,7 @@ package com.yuudati.bookmanager.controller;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.yuudati.bookmanager.entity.*;
 import com.yuudati.bookmanager.mapper.BookAttributesMapper;
 import com.yuudati.bookmanager.mapper.BookCharactersMapper;
@@ -128,7 +129,7 @@ public class SearchController implements Initializable {
         dataTableView.setOnKeyReleased(event -> {
             List<BookInfo> selectedItems = dataTableView.getSelectionModel().getSelectedItems();
             if (selectedItems != null && selectedItems.size() > 0) {
-                boolean flag = mainController.showAlert("是否要删除所选: " + selectedItems.size() + " 项", true) && (event.getCode() == KeyCode.DELETE);
+                boolean flag = (event.getCode() == KeyCode.DELETE) && mainController.showAlert("是否要删除所选: " + selectedItems.size() + " 项", true);
                 if (flag) {
                     final BookCharactersExample charactersExample = new BookCharactersExample();
                     final List<String> bookIdList = selectedItems.stream().map(BookInfo::getId).collect(Collectors.toList());
@@ -236,7 +237,13 @@ public class SearchController implements Initializable {
                 charactersExample.createCriteria()
                         .andBookIdEqualTo(bookInfo.getId());
                 charactersMapper.deleteByExample(charactersExample);
-                split.forEach(character -> charactersMapper.insert(new BookCharacters(null, bookInfo.getId(), character)));
+                List<BookCharacters> newBookCharacterList = Lists.newArrayList();
+                split.forEach(character -> {
+                    final BookCharacters record = new BookCharacters(null, bookInfo.getId(), character);
+                    charactersMapper.insert(record);
+                    newBookCharacterList.add(record);
+                });
+                bookInfo.setCharacterList(newBookCharacterList);
             }
         });
         attributesCol.setCellValueFactory(cellData -> cellData.getValue().attributesProperty());
@@ -250,7 +257,13 @@ public class SearchController implements Initializable {
                 attributesExample.createCriteria()
                         .andBookIdEqualTo(bookInfo.getId());
                 attributesMapper.deleteByExample(attributesExample);
-                split.forEach(character -> attributesMapper.insert(new BookAttributes(null, bookInfo.getId(), character)));
+                final List<BookAttributes> newAttributeList = Lists.newArrayList();
+                split.forEach(character -> {
+                    final BookAttributes record = new BookAttributes(null, bookInfo.getId(), character);
+                    attributesMapper.insert(record);
+                    newAttributeList.add(record);
+                });
+                bookInfo.setAttributeList(newAttributeList);
             }
         });
         actionCol.setCellFactory(param -> {
