@@ -2,10 +2,13 @@ package com.yuudati.bookmanager.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.AnchorPane;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +18,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Administrator李新栋 [lxd3808@163.com]
@@ -102,6 +106,29 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 弹出一个提示框
+     *
+     * @param text
+     * @return
+     */
+    @NotNull
+    public Boolean showAlert(String text, boolean needCancel) {
+        AtomicBoolean flag = new AtomicBoolean(false);
+        Alert alert = null;
+        if (needCancel) {
+            alert = new Alert(Alert.AlertType.CONFIRMATION);
+        } else {
+            alert = new Alert(Alert.AlertType.INFORMATION);
+        }
+        alert.titleProperty().set("信息");
+        alert.headerTextProperty().set(text);
+        alert.contentTextProperty().set(null);
+        alert.showAndWait().filter(response -> response == ButtonType.OK)
+                .ifPresent(response -> flag.set(true));
+        return flag.get();
     }
 
 }

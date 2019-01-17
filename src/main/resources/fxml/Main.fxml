@@ -4,7 +4,7 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="parentPane" prefWidth="1366.0" xmlns="http://javafx.com/javafx/10.0.1"
+<AnchorPane fx:id="parentPane" prefWidth="1366.0" xmlns="http://javafx.com/javafx/8.0.141"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.yuudati.bookmanager.controller.MainController">
     <TabPane fx:id="tabPane" prefWidth="1366.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="32.0"
              tabMaxWidth="75.0" tabMinHeight="32.0" tabMinWidth="75.0">

@@ -270,7 +270,7 @@ public class MoveAndRenameController implements Initializable {
     public void switchToPath() {
         File toPath = directoryChoose("选择目标路径", toPathTextField);
         assert toPath != null;
-        if (!toPath.exists() && showAlert("该路径不存在, 是否创建")) {
+        if (!toPath.exists() && mainController.showAlert("该路径不存在, 是否创建", false)) {
             toPath.mkdirs();
         }
         ObservableList<Book> tableItems = mainTableView.getItems();
@@ -296,7 +296,7 @@ public class MoveAndRenameController implements Initializable {
             if (Strings.isNullOrEmpty(showField.getText()) ||
                     showField.getText().startsWith("源") ||
                     showField.getText().startsWith("目")) {
-                showAlert("请选择一个目录");
+                mainController.showAlert("请选择一个目录", false);
                 return null;
             }
             file = new File(showField.getText());
@@ -309,17 +309,17 @@ public class MoveAndRenameController implements Initializable {
      *
      * @param text info
      */
-    @NotNull
-    private Boolean showAlert(String text) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.titleProperty().set("信息");
-        alert.headerTextProperty().set(text);
-        alert.contentTextProperty().set(null);
-        AtomicBoolean flag = new AtomicBoolean(false);
-        alert.showAndWait().filter(response -> response == ButtonType.OK)
-                .ifPresent(response -> flag.set(true));
-        return flag.get();
-    }
+//    @NotNull
+//    private Boolean showAlert(String text) {
+//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//        alert.titleProperty().set("信息");
+//        alert.headerTextProperty().set(text);
+//        alert.contentTextProperty().set(null);
+//        AtomicBoolean flag = new AtomicBoolean(false);
+//        alert.showAndWait().filter(response -> response == ButtonType.OK)
+//                .ifPresent(response -> flag.set(true));
+//        return flag.get();
+//    }
 
     /**
      * 打开一个进度条
@@ -363,10 +363,10 @@ public class MoveAndRenameController implements Initializable {
             Boolean result = forkJoinPool.invoke(task);
             Platform.runLater(() -> {
                 if (Boolean.TRUE.equals(result)) {
-                    showAlert("移动完成");
+                    mainController.showAlert("移动完成", false);
                 } else {
                     progressController.getStage().close();
-                    showAlert("移动失败");
+                    mainController.showAlert("移动失败", false);
                 }
             });
         });
@@ -386,10 +386,10 @@ public class MoveAndRenameController implements Initializable {
             Boolean result = forkJoinPool.invoke(task);
             Platform.runLater(() -> {
                 if (Boolean.TRUE.equals(result)) {
-                    showAlert("重命名完成");
+                    mainController.showAlert("重命名完成", false);
                 } else {
                     Platform.runLater(() -> progressController.getStage().close());
-                    showAlert("重命名失败");
+                    mainController.showAlert("重命名失败", false);
                 }
             });
         });
@@ -409,10 +409,10 @@ public class MoveAndRenameController implements Initializable {
             Boolean result = forkJoinPool.invoke(task);
             Platform.runLater(() -> {
                 if (Boolean.TRUE.equals(result)) {
-                    showAlert("操作完成");
+                    mainController.showAlert("操作完成", false);
                 } else {
                     Platform.runLater(() -> progressController.getStage().close());
-                    showAlert("操作失败");
+                    mainController.showAlert("操作失败", false);
                 }
             });
         });

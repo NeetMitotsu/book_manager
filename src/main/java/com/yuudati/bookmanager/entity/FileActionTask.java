@@ -5,12 +5,11 @@ import com.yuudati.bookmanager.mapper.BookInfoMapper;
 import com.yuudati.bookmanager.util.SpringContext;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
 
@@ -123,10 +122,14 @@ public class FileActionTask extends RecursiveTask<Boolean> {
                 completeCount++;
                 // 设置新文件
                 book.setNewFile(newFile);
-                final int insert = bookInfoMapper.insert(new BookInfo(book));
-                System.out.println(insert);
+                int insert = 0;
+                try {
+                    insert = bookInfoMapper.insert(new BookInfo(book));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 int count = progressController.getCount();
-                progressController.setCount(++count);
+                progressController.setCount(count + insert);
             }
         }
         return completeCount == fileList.size();
