@@ -145,7 +145,15 @@ public class SearchController implements Initializable {
         // 初始化题材
         List<String> parodyList = infoMapper.selectAllParody();
         addFilteredList(parodyList, parodyComboBox);
+//        搜索按钮
         searchButton.setOnMouseClicked(event -> doSearch());
+//        回车搜索
+        parentPane.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                doSearch();
+            }
+        });
+        // TODO 初始化仓库功能
         initDBButton.setOnMouseClicked(event -> mainController.showAlert("该功能暂不可用", false));
     }
 
@@ -177,6 +185,8 @@ public class SearchController implements Initializable {
                 } else {
                     bookIdListFilter.addAll(attributesIdList);
                 }
+            }else {
+                mainController.showAlert("未找到包含属性: <" + attributesTextField.getText() + ">的项目", false);
             }
         }
         // 符合角色的
@@ -192,6 +202,8 @@ public class SearchController implements Initializable {
                 } else {
                     bookIdListFilter.addAll(charactersIdList);
                 }
+            }else {
+                mainController.showAlert("未找到包含角色: <" + characterTextField.getText() + ">的项目", false);
             }
         }
         final BookInfoExample infoExample = new BookInfoExample();
