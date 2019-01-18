@@ -40,7 +40,7 @@ public class Main extends Application {
         SpringContext.setApplicationContext(context);
         final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
         Parent root = fxmlLoader.load();
-        stage.setTitle("Book Manager V1.0");
+        stage.setTitle("Book Manager V1.5");
         final Scene scene = new Scene(root, 1366, 800);
         final MainController mainController = fxmlLoader.getController();
         scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());

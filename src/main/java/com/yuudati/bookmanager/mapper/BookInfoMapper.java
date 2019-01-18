@@ -123,4 +123,25 @@ public interface BookInfoMapper {
         "where id = #{id,jdbcType=VARCHAR}"
     })
     int updateByPrimaryKey(BookInfo record);
+
+    /**
+     * 查询所有来源
+     * @return
+     */
+    @Select({"SELECT DISTINCT exhibition FROM book_info ORDER BY exhibition"})
+    List<String> selectAllExhibition();
+
+    /**
+     * 查询所有作者
+     * @return
+     */
+    @Select({"SELECT DISTINCT artist FROM book_info"})
+    List<String> selectAllArtist();
+
+    /**
+     * 查询所有题材
+     * @return
+     */
+    @Select({"SELECT DISTINCT parody FROM book_info ORDER BY parody"})
+    List<String> selectAllParody();
 }

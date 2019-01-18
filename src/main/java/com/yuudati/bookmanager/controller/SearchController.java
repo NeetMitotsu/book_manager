@@ -3,13 +3,15 @@ package com.yuudati.bookmanager.controller;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.yuudati.bookmanager.entity.*;
 import com.yuudati.bookmanager.mapper.BookAttributesMapper;
 import com.yuudati.bookmanager.mapper.BookCharactersMapper;
 import com.yuudati.bookmanager.mapper.BookInfoMapper;
 import com.yuudati.bookmanager.util.SpringContext;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -22,8 +24,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -47,7 +47,14 @@ public class SearchController implements Initializable {
     private BookAttributesMapper attributesMapper = (BookAttributesMapper) SpringContext.getBean(BookAttributesMapper.class);
     private BookCharactersMapper charactersMapper = (BookCharactersMapper) SpringContext.getBean(BookCharactersMapper.class);
 
-    private final Splitter splitter = Splitter.on(",").trimResults().omitEmptyStrings();
+    /**
+     * 逗号分割器
+     */
+    private final Splitter commaSplitter = Splitter.on(",").trimResults().omitEmptyStrings();
+    /**
+     * 空格分割器
+     */
+    private final Splitter spaceSplitter = Splitter.on(" ").trimResults().omitEmptyStrings();
 
     @FXML
     private AnchorPane parentPane;
@@ -121,9 +128,146 @@ public class SearchController implements Initializable {
         dataTableView.prefWidthProperty().bind(parentPane.widthProperty());
         dataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         initDataTableView();
+        initSearch();
         initData();
     }
 
+    /**
+     * 初始化搜索功能
+     */
+    private void initSearch() {
+        // 初始化来源
+        List<String> exhibitionList = infoMapper.selectAllExhibition();
+        addFilteredList(exhibitionList, exhibitionComboBox);
+        // 初始化作者
+        List<String> artistList = infoMapper.selectAllArtist();
+        addFilteredList(artistList, artistComboBox);
+        // 初始化题材
+        List<String> parodyList = infoMapper.selectAllParody();
+        addFilteredList(parodyList, parodyComboBox);
+        searchButton.setOnMouseClicked(event -> doSearch());
+        initDBButton.setOnMouseClicked(event -> mainController.showAlert("该功能暂不可用", false));
+    }
+
+    /**
+     * 执行搜索
+     */
+    private void doSearch() {
+        // 搜索条件
+        final String exhibitionFilter = exhibitionComboBox.getValue();
+        final String bookNameFilter = bookNameTextField.getText();
+        final String artistFilter = artistComboBox.getValue();
+        final String parodyFilter = parodyComboBox.getValue();
+        final String translateFilter = translateTextField.getText();
+        final Iterable<String> charactersFilter = commaSplitter.split(characterTextField.getText());
+
+        Set<String> bookIdListFilter = Sets.newHashSet();
+
+        // 符合属性的
+        if (!Strings.isNullOrEmpty(attributesTextField.getText())) {
+            final Iterable<String> attributesFilter = commaSplitter.split(attributesTextField.getText());
+            final BookAttributesExample attributesExample = new BookAttributesExample();
+            attributesExample.createCriteria()
+                    .andAttributeIn(Lists.newArrayList(attributesFilter));
+            final List<BookAttributes> bookAttributes = attributesMapper.selectByExample(attributesExample);
+            if (bookAttributes != null && bookAttributes.size() > 0) {
+                List<String> attributesIdList = bookAttributes.stream().map(BookAttributes::getBookId).collect(Collectors.toList());
+                if (bookIdListFilter.size() > 0) {
+                    bookIdListFilter.retainAll(attributesIdList);
+                } else {
+                    bookIdListFilter.addAll(attributesIdList);
+                }
+            }
+        }
+        // 符合角色的
+        if (!Strings.isNullOrEmpty(characterTextField.getText())) {
+            final BookCharactersExample charactersExample = new BookCharactersExample();
+            charactersExample.createCriteria()
+                    .andCharacterIn(Lists.newArrayList(charactersFilter));
+            final List<BookCharacters> bookCharacters = charactersMapper.selectByExample(charactersExample);
+            if (bookCharacters != null && bookCharacters.size() > 0) {
+                List<String> charactersIdList = bookCharacters.stream().map(BookCharacters::getBookId).collect(Collectors.toList());
+                if (bookIdListFilter.size() > 0) {
+                    bookIdListFilter.retainAll(charactersIdList);
+                } else {
+                    bookIdListFilter.addAll(charactersIdList);
+                }
+            }
+        }
+        final BookInfoExample infoExample = new BookInfoExample();
+        if (!Strings.isNullOrEmpty(exhibitionFilter)) {
+            infoExample.or()
+                    .andExhibitionEqualTo(exhibitionFilter.trim());
+        }
+        if (!Strings.isNullOrEmpty(bookNameFilter)) {
+            infoExample.or()
+                    .andNameLike("%" + bookNameFilter.trim() + "%");
+        }
+        if (!Strings.isNullOrEmpty(artistFilter)) {
+            infoExample.or()
+                    .andArtistEqualTo(artistFilter.trim());
+        }
+        if (!Strings.isNullOrEmpty(parodyFilter)) {
+            infoExample.or()
+                    .andParodyEqualTo(parodyFilter.trim());
+        }
+        if (!Strings.isNullOrEmpty(translateFilter)) {
+            infoExample.or()
+                    .andTranslateLike("%" + translateFilter.trim() + "%");
+        }
+        final List<BookInfo> bookInfos = infoMapper.selectByExample(infoExample);
+        if (bookInfos != null && bookInfos.size() > 0) {
+            if (bookIdListFilter.size() > 0) {
+                final List<BookInfo> collect = bookInfos.stream().filter(item -> bookIdListFilter.contains(item.getId())).collect(Collectors.toList());
+                if (collect.size() > 0) {
+                    addCharacterAndAttributes(bookInfos);
+                    dataTableView.setItems(FXCollections.observableArrayList(collect));
+                } else {
+                    mainController.showAlert("未找到匹配项", false);
+                }
+            } else {
+                addCharacterAndAttributes(bookInfos);
+                dataTableView.setItems(FXCollections.observableArrayList(bookInfos));
+            }
+        } else {
+            mainController.showAlert("未找到匹配项", false);
+        }
+    }
+
+    /**
+     * 选择框添加匹配功能
+     *
+     * @param valueList
+     * @param comboBox
+     */
+    private void addFilteredList(List<String> valueList, ComboBox<String> comboBox) {
+        FilteredList<String> filteredItems = new FilteredList<>(
+                FXCollections.observableArrayList(valueList), p -> true);
+        comboBox.getEditor().textProperty().addListener(((observable, oldValue, newValue) -> {
+            final TextField editor = comboBox.getEditor();
+            final String selected = comboBox.getSelectionModel().getSelectedItem();
+            Platform.runLater(() -> {
+                comboBox.show();
+                if (selected == null || !selected.equalsIgnoreCase(editor.getText())) {
+                    filteredItems.setPredicate(item -> {
+                        final Iterable<String> split = spaceSplitter.split(newValue);
+                        for (String keyword :
+                                split) {
+                            if (!item.toUpperCase().contains(keyword.toUpperCase())) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                }
+            });
+        }));
+        comboBox.setItems(filteredItems);
+    }
+
+    /**
+     * 初始化表格
+     */
     private void initDataTableView() {
         dataTableView.setEditable(true);
         dataTableView.setOnKeyReleased(event -> {
@@ -232,7 +376,7 @@ public class SearchController implements Initializable {
             BookInfo bookInfo = dataTableView.getSelectionModel().getSelectedItem();
             final String newValue = event.getNewValue();
             if (!Strings.isNullOrEmpty(newValue)) {
-                Iterable<String> split = splitter.split(newValue);
+                Iterable<String> split = commaSplitter.split(newValue);
                 final BookCharactersExample charactersExample = new BookCharactersExample();
                 charactersExample.createCriteria()
                         .andBookIdEqualTo(bookInfo.getId());
@@ -252,7 +396,7 @@ public class SearchController implements Initializable {
             BookInfo bookInfo = dataTableView.getSelectionModel().getSelectedItem();
             final String newValue = event.getNewValue();
             if (!Strings.isNullOrEmpty(newValue)) {
-                Iterable<String> split = splitter.split(newValue);
+                Iterable<String> split = commaSplitter.split(newValue);
                 final BookAttributesExample attributesExample = new BookAttributesExample();
                 attributesExample.createCriteria()
                         .andBookIdEqualTo(bookInfo.getId());
@@ -282,8 +426,18 @@ public class SearchController implements Initializable {
         });
     }
 
+    /**
+     * 初始化数据
+     */
     private void initData() {
         final List<BookInfo> bookInfos = infoMapper.selectByExample(new BookInfoExample());
+        if (bookInfos != null && bookInfos.size() > 0) {
+            addCharacterAndAttributes(bookInfos);
+        }
+        dataTableView.setItems(FXCollections.observableArrayList(bookInfos));
+    }
+
+    private void addCharacterAndAttributes(List<BookInfo> bookInfos) {
         bookInfos.forEach(bookInfo -> {
             final BookCharactersExample bookCharactersExample = new BookCharactersExample();
             bookCharactersExample.createCriteria()
@@ -296,7 +450,6 @@ public class SearchController implements Initializable {
             bookInfo.setCharacterList(bookCharacters);
             bookInfo.setAttributeList(bookAttributes);
         });
-        dataTableView.setItems(FXCollections.observableArrayList(bookInfos));
     }
 
 }

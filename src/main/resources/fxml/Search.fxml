@@ -12,10 +12,10 @@
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.yuudati.bookmanager.controller.SearchController">
     <Button fx:id="sourcePathButton" disable="true" layoutX="14.0" layoutY="15.0" mnemonicParsing="false"
             prefHeight="40.0"
-            prefWidth="180.0" text="目标地址"/>
+            prefWidth="180.0" text="仓库路径"/>
     <TextField fx:id="sourcePathTextField" editable="false" layoutX="194.0" layoutY="15.0" prefHeight="40.0"
-               prefWidth="600.0" text="目标路径"/>
-    <Button fx:id="initDBButton" layoutX="825.0" layoutY="15.0" mnemonicParsing="false"
+               prefWidth="600.0" text="仓库路径"/>
+    <Button fx:id="initDBButton" disable="true" layoutX="825.0" layoutY="15.0" mnemonicParsing="false"
             prefHeight="40.0" prefWidth="85.0" text="初始化仓库"/>
     <Label layoutX="15.0" layoutY="70.0" prefHeight="30.0" prefWidth="60.0" text="来源:"/>
     <ComboBox fx:id="exhibitionComboBox" editable="true" layoutY="70.0" prefHeight="30.0" prefWidth="190.0"
