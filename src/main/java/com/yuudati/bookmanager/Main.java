@@ -33,6 +33,10 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         File datafile = new File("." + File.separator + "data" + File.separator + "book_manager.db");
         if (!datafile.exists()) {
+            File dir = new File("." + File.separator + "data");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
             File database = new File(getClass().getResource(File.separator + "database" + File.separator + "book_manager.db").toURI());
             FileCopyUtils.copy(database, datafile);
         }
