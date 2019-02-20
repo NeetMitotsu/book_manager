@@ -1,11 +1,17 @@
 package com.yuudati.bookmanager.controller;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.fxml.JavaFXBuilderFactory;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -129,6 +135,29 @@ public class MainController implements Initializable {
         alert.showAndWait().filter(response -> response == ButtonType.OK)
                 .ifPresent(response -> flag.set(true));
         return flag.get();
+    }
+
+    /**
+     * 打开一个进度条
+     *
+     * @param total 进度条长度
+     * @return 进度条controller
+     */
+    @NotNull
+    public ProgressController showProgress(int total) throws IOException {
+        // int count, int total
+        ProgressController controller = null;
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource("/fxml/ProgressBar.fxml"));
+        fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
+        Parent root = fxmlLoader.load();
+        Stage progressStage = new Stage(StageStyle.TRANSPARENT);
+        progressStage.setAlwaysOnTop(true);
+        progressStage.setScene(new Scene(root));
+        controller = fxmlLoader.getController();
+        controller.init(0, total, progressStage);
+        progressStage.show();
+        return controller;
     }
 
 }

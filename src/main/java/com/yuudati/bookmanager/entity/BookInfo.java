@@ -3,6 +3,7 @@ package com.yuudati.bookmanager.entity;
 import com.yuudati.bookmanager.util.MD5CaculateUtil;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import lombok.NonNull;
 
 import java.io.File;
 import java.util.List;
@@ -204,9 +205,9 @@ public class BookInfo {
         return characterList;
     }
 
-    public void setCharacterList(List<BookCharacters> characterList) {
+    public void setCharacterList(@NonNull List<BookCharacters> characterList) {
         this.characterList = characterList;
-        if (characterList != null && characterList.size() > 0){
+        if (characterList.size() > 0) {
             final List<String> collect = characterList.stream().map(BookCharacters::getCharacter).collect(Collectors.toList());
             this.characters = new SimpleStringProperty(String.join(",", collect));
         }
@@ -216,9 +217,9 @@ public class BookInfo {
         return attributeList;
     }
 
-    public void setAttributeList(List<BookAttributes> attributeList) {
+    public void setAttributeList(@NonNull List<BookAttributes> attributeList) {
         this.attributeList = attributeList;
-        if (attributeList != null && attributeList.size() > 0){
+        if (attributeList.size() > 0) {
             final List<String> collect = attributeList.stream().map(BookAttributes::getAttribute).collect(Collectors.toList());
             this.attributes = new SimpleStringProperty(String.join(",", collect));
         }

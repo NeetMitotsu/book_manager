@@ -84,6 +84,7 @@ public class MoveAndRenameController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        mainTableView.setItems(FXCollections.observableArrayList());
         mainTableView.prefWidthProperty().bind(parentPane.widthProperty());
         mainTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         initTableView();
@@ -274,7 +275,7 @@ public class MoveAndRenameController implements Initializable {
             toPath.mkdirs();
         }
         ObservableList<Book> tableItems = mainTableView.getItems();
-        if (tableItems != null && mainTableView.getItems().size() > 0) {
+        if (tableItems.size() > 0) {
             tableItems.forEach(book -> {
                 book.setToPath(toPath.getPath());
                 book.setNewName(String.format("(%s)_[%s]_%s_(%s)_[%s]",
@@ -305,58 +306,14 @@ public class MoveAndRenameController implements Initializable {
     }
 
     /**
-     * 打开一个提醒框
-     *
-     * @param text info
-     */
-//    @NotNull
-//    private Boolean showAlert(String text) {
-//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//        alert.titleProperty().set("信息");
-//        alert.headerTextProperty().set(text);
-//        alert.contentTextProperty().set(null);
-//        AtomicBoolean flag = new AtomicBoolean(false);
-//        alert.showAndWait().filter(response -> response == ButtonType.OK)
-//                .ifPresent(response -> flag.set(true));
-//        return flag.get();
-//    }
-
-    /**
-     * 打开一个进度条
-     * @param total 进度条长度
-     * @return 进度条controller
-     */
-    @NotNull
-    private ProgressController showProgress(int total) {
-        // int count, int total
-        ProgressController controller = null;
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(getClass().getResource("/fxml/ProgressBar.fxml"));
-            fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
-            Parent root = fxmlLoader.load();
-            Stage progressStage = new Stage(StageStyle.TRANSPARENT);
-            progressStage.setAlwaysOnTop(true);
-            progressStage.setScene(new Scene(root));
-            controller = fxmlLoader.getController();
-            controller.init(0, total, progressStage);
-            progressStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return controller;
-    }
-
-
-    /**
      * 只移动
      */
-    public void onlyMove() {
+    public void onlyMove() throws IOException {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
-        ProgressController progressController = showProgress(books.size());
+        ProgressController progressController = mainController.showProgress(books.size());
 
         ThreadUtil.getThreadPool().submit(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.MOVE);
@@ -375,12 +332,12 @@ public class MoveAndRenameController implements Initializable {
     /**
      * 只重命名
      */
-    public void onlyRename() {
+    public void onlyRename() throws IOException {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
-        ProgressController progressController = showProgress(books.size());
+        ProgressController progressController = mainController.showProgress(books.size());
         ThreadUtil.getThreadPool().submit(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.RENAME);
             Boolean result = forkJoinPool.invoke(task);
@@ -398,12 +355,12 @@ public class MoveAndRenameController implements Initializable {
     /**
      * 移动并重命名
      */
-    public void moveAndRename() {
+    public void moveAndRename() throws IOException {
         final ObservableList<Book> books = mainTableView.getItems();
         // cpu核数为最大并发数
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         // 展示一个进度条
-        ProgressController progressController = showProgress(books.size());
+        ProgressController progressController = mainController.showProgress(books.size());
         ThreadUtil.getThreadPool().submit(() -> {
             ForkJoinTask<Boolean> task = new FileActionTask(books, progressController, FileActionTask.MOVE_RENAME);
             Boolean result = forkJoinPool.invoke(task);

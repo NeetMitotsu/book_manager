@@ -31,19 +31,19 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        File datafile = new File("./data/book_manager.db");
-        if (!datafile.exists()){
-            File database = new File(getClass().getResource("/database/book_manager.db").toURI());
+        File datafile = new File("." + File.separator + "data" + File.separator + "book_manager.db");
+        if (!datafile.exists()) {
+            File database = new File(getClass().getResource(File.separator + "database" + File.separator + "book_manager.db").toURI());
             FileCopyUtils.copy(database, datafile);
         }
         AbstractApplicationContext context = new ClassPathXmlApplicationContext("ApplicationContext.xml");
         SpringContext.setApplicationContext(context);
-        final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
+        final FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(File.separator + "fxml" + File.separator + "Main.fxml"));
         Parent root = fxmlLoader.load();
         stage.setTitle("Book Manager V1.5");
         final Scene scene = new Scene(root, 1366, 800);
         final MainController mainController = fxmlLoader.getController();
-        scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource(File.separator + "css" + File.separator + "application.css").toExternalForm());
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> {
             mainController.saveConfig();
